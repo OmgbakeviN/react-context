@@ -20,7 +20,7 @@ const RoleRoute = ({ allowed }) => {
   if (!allowed.includes(role)) {
     return (
       <Navigate
-        to={`${process.env.PUBLIC_URL}/pages/errors/error401/${layout}`}
+        to={`${process.env.PUBLIC_URL}/pages/errors/error401/:layout`}
         replace
       />
     );
