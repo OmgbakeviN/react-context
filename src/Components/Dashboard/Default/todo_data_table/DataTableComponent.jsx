@@ -207,11 +207,26 @@ const TodoTable = () => {
     {
       name: 'Actions',
       cell: row => (
-        <div className='d-flex gap-2'>
-          <Btn attrBtn={{ color: 'primary', size: 'sm', onClick: () => handleEdit(row) }}>Modifier</Btn>
-          <Btn attrBtn={{ color: 'danger', size: 'sm', onClick: () => handleDeleteSingle(row) }}>Supprimer</Btn>
+        <div className='d-flex gap-1'>
+          <Btn attrBtn={{ 
+            color: 'primary', 
+            size: 'sm', 
+            className: 'btn-sm py-1 px-2', 
+            onClick: () => handleEdit(row) 
+          }}>
+            <i className="fa fa-edit"></i>
+          </Btn>
+          <Btn attrBtn={{ 
+            color: 'danger', 
+            size: 'sm', 
+            className: 'btn-sm py-1 px-2', 
+            onClick: () => handleDeleteSingle(row) 
+          }}>
+            <i className="fa fa-trash"></i>
+          </Btn>
         </div>
       ),
+      width: '120px',
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
