@@ -1,5 +1,31 @@
 export const MENUITEMS = [
   {
+    menutitle: "Gestion FEICOM",
+    menucontent: "Tables FEICOM",
+    Items: [
+      {
+        title: "Tables FEICOM",
+        icon: "database",          // Choisis une icône principale pour le groupe
+        type: "sub",
+        badge: "badge badge-light-success", // (optionnel)
+        badgetxt: "8",                     // (nombre de tables)
+        active: false,
+        children: [
+          { path: `${process.env.PUBLIC_URL}/feicom/departements`, title: "Départements", type: "link" },
+          { path: `${process.env.PUBLIC_URL}/feicom/agences`,      title: "Agences",      type: "link" },
+          { path: `${process.env.PUBLIC_URL}/feicom/communes`,     title: "Communes",     type: "link" },
+          { path: `${process.env.PUBLIC_URL}/feicom/entreprises`,  title: "Entreprises",  type: "link" },
+          { path: `${process.env.PUBLIC_URL}/feicom/lots`,         title: "Lots",         type: "link" },
+          { path: `${process.env.PUBLIC_URL}/feicom/projets`,      title: "Projets",      type: "link" },
+          { path: `${process.env.PUBLIC_URL}/feicom/todos`,        title: "Todos",        type: "link" },
+          { path: `${process.env.PUBLIC_URL}/feicom/visites`,      title: "Visites",      type: "link" },
+        ],
+      },
+    ],
+  },
+
+  
+  {
     menutitle: "General",
     menucontent: "Dashboards,Widgets",
     Items: [

@@ -10,6 +10,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 
+
+
 import RoleRoute from "./RoleRoute";
 import ErrorPage2 from "../Components/Pages/ErrorPages/ErrorPage401"
 
@@ -45,31 +47,25 @@ const Routers = () => {
 
       <Suspense fallback={<Loader />}>
         <Routes>
-          {/* Routes protégées globales (auth requise) */}
           <Route path="/" element={<PrivateRoute />}>
             {authenticated && (
               <>
                 {/* Redirection par défaut selon le rôle */}
-                <Route
-                  index
-                  element={<Navigate to={defaultRedirect} replace />}
-                />
-                <Route
-                  path="/"
-                  element={<Navigate to={defaultRedirect} replace />}
-                />
+                <Route index element={<Navigate to={defaultRedirect} replace />} />
+                <Route path="/" element={<Navigate to={defaultRedirect} replace />} />
               </>
             )}
 
             {/* ✅ Branches PROTÉGÉES PAR RÔLE */}
             <Route element={<RoleRoute allowed={["REGIONAL"]} />}>
-              {/* ATTENTION: chemin SANS process.env.PUBLIC_URL ici, on est en nested */}
               <Route path="dashboard/regional/*" element={<LayoutRoutes />} />
             </Route>
 
             <Route element={<RoleRoute allowed={["NATIONAL"]} />}>
               <Route path="dashboard/national/*" element={<LayoutRoutes />} />
             </Route>
+
+            
 
             {/* Le reste de l'app protégée (par auth simple) */}
             <Route path="/*" element={<LayoutRoutes />} />

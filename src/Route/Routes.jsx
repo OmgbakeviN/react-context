@@ -180,7 +180,26 @@ import FormTouchspinContain from "../Components/Forms/FormWidget/FormTouchspin";
 import FormClipboardContain from "../Components/Forms/FormWidget/FormClipboard";
 import FAQContent from "../Components/FAQ";
 
+
+import DepartmentTable from "../Components/Dashboard/Default/department_data_table/index";
+import AgenceTable from "../Components/Dashboard/Default/agency_data_table/index";
+import CommuneTable from "../Components/Dashboard/Default/commune_data_table/index";
+import EntrepriseTable from "../Components/Dashboard/Default/enterprise_data_table/index";
+import LotTable from "../Components/Dashboard/Default/lots_data_table/index";
+import ProjetTable from "../Components/Dashboard/Default/project_data_table/index";
+import TodoTable from "../Components/Dashboard/Default/todo_data_table/index";
+import VisiteTable from "../Components/Dashboard/Default/visit_data_table/index";
+
 export const routes = [
+  { path: `${process.env.PUBLIC_URL}/feicom/departements/:layout`, Component: <DepartmentTable /> },
+  { path: `${process.env.PUBLIC_URL}/feicom/agences/:layout`,      Component: <AgenceTable /> },
+  { path: `${process.env.PUBLIC_URL}/feicom/communes/:layout`,     Component: <CommuneTable /> },
+  { path: `${process.env.PUBLIC_URL}/feicom/entreprises/:layout`,  Component: <EntrepriseTable /> },
+  { path: `${process.env.PUBLIC_URL}/feicom/lots/:layout`,         Component: <LotTable /> },
+  { path: `${process.env.PUBLIC_URL}/feicom/projets/:layout`,      Component: <ProjetTable /> },
+  { path: `${process.env.PUBLIC_URL}/feicom/todos/:layout`,        Component: <TodoTable /> },
+  { path: `${process.env.PUBLIC_URL}/feicom/visites/:layout`,      Component: <VisiteTable /> },
+
   { path: `${process.env.PUBLIC_URL}/dashboard/default/:layout`, Component: <Default /> },
   { path: `${process.env.PUBLIC_URL}/dashboard/e-commerce/:layout`, Component: <Ecommerce /> },
   { path: `${process.env.PUBLIC_URL}/dashboard/online-course/:layout`, Component: <OnlineCourse /> },
