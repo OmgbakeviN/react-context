@@ -4,8 +4,8 @@ export const MENUITEMS = [
     menucontent: "Tables FEICOM",
     Items: [
       {
-        title: "Tables FEICOM",
-        icon: "database",          // Choisis une icône principale pour le groupe
+        title: "FEICOM",
+        icon: "home",          // Choisis une icône principale pour le groupe
         type: "sub",
         badge: "badge badge-light-success", // (optionnel)
         badgetxt: "8",                     // (nombre de tables)

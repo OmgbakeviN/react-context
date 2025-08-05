@@ -92,6 +92,7 @@ const EntrepriseTable = () => {
   const [modalContent, setModalContent] = useState(null);
 
   const [error, setError] = useState(null);
+  const [searchText, setSearchText] = useState('');
 
   // --- API fetch ---
   const fetchEntreprises = async () => {
@@ -106,6 +107,11 @@ const EntrepriseTable = () => {
       setLoading(false);
     }
   };
+
+  // filtering search
+  const filteredData = data.filter(row => 
+    Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
+  );
 
   useEffect(() => {
     fetchEntreprises();
@@ -236,6 +242,9 @@ const EntrepriseTable = () => {
         <H4 attrH4={{ className: 'text-muted m-0' }}>Gestion des Entreprises</H4>
         <Btn attrBtn={{ color: 'success', onClick: handleAdd }}>Ajouter</Btn>
       </div>
+
+      <input type="text" className="form-control mb-2" placeholder="Recherche" onChange={e => setSearchText(e.target.value)} />
+
       {error && <div className='alert alert-danger'>{error}</div>}
       {selectedRows.length > 0 && (
         <div className='d-flex align-items-center justify-content-between bg-light-info p-2 mb-2'>
@@ -244,7 +253,7 @@ const EntrepriseTable = () => {
         </div>
       )}
       <DataTable
-        data={data}
+        data={filteredData}
         columns={tableColumns}
         striped
         center

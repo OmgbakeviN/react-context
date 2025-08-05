@@ -20,9 +20,9 @@ const Dashboard = () => {
       <Breadcrumbs mainTitle="Default" parent="Dashboard" title="Default" />
       <Container fluid={true}>
         <Row className="widget-grid">
-          <AllowedAccess roles={['REGIONAL']}>
+          {/* <AllowedAccess roles={['REGIONAL']}> */}
             <GreetingCard />
-          </AllowedAccess>
+          {/* </AllowedAccess> */}
           <WidgetsWrapper />
           <OverallBalance />
           <RecentOrders />
