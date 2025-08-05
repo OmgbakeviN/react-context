@@ -27,10 +27,11 @@ import { Provider, useSelector } from 'react-redux';
 import { PermissionProvider } from 'react-permission-role';
 
 const AppContent = () => {
-  const userRole = useSelector((state) => state.auth.user?.role );
-  
+  const user = useSelector((state) => state.auth.user );
+  console.log(user); 
+
   return (
-    <PermissionProvider roles={[userRole]}>
+    <PermissionProvider>
       <div className='App'>
         <CustomizerProvider>
           <FaqProvider>
