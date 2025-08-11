@@ -212,7 +212,7 @@ const ProjetTable = ({ filters = {} }) => {
   setError(null);
   try {
     let response;
-    const hasAll = Boolean(exercice) && Boolean(agence) && Boolean(mois);
+    const hasAll = Boolean(exercice) && Boolean(agence) ;
 
     if (hasAll) {
       // call filter endpoint only when all 3 are present

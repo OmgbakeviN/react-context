@@ -28,6 +28,8 @@ const Dashboard = () => {
           <WidgetsWrapper />
           <AgencyDash />
           <ProjectDash />
+          <WidgetsWrapper />
+          <AgencyDash />
           {/* <OverallBalance />
           <RecentOrders />
           <ActivityCard />

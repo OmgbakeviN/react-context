@@ -62,10 +62,14 @@ export const WidgetsData1WidgetsPage = [
 export const Widgets2Data = {
   title: 'Reception Definitives',
   total: '18,75%',
+  color: 'success',
+  gros: 70,
   chart: Widgets2ChartData,
 };
 export const Widgets2Data2 = {
   title: 'Mise en service',
+  color: 'success',
+  gros: 70,
   total: '10%',
   chart: Widgets2ChartData2,
 };
