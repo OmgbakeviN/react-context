@@ -1,30 +1,30 @@
 import { Widgets2ChartData, Widgets2ChartData2, Widgets2ChartData2Widgets, Widgets2ChartDataWidgets } from './Chart';
 
 export const WidgetsData = {
-  title: 'Purchase',
+  title: 'Nombre Dagences',
   gros: 50,
-  total: 10_000,
+  total: 10,
   color: 'secondary',
   icon: 'cart',
 };
 export const WidgetsData2 = {
-  title: 'Sales return',
+  title: 'Projets',
   gros: 20,
-  total: 7000,
+  total: 7,
   color: 'warning',
   icon: 'return-box',
 };
 export const WidgetsData3 = {
-  title: 'Sales',
-  gros: 70,
+  title: 'Paiments',
+  gros: '27%',
   total: 4_200,
   color: 'primary',
   icon: 'tag',
 };
 export const WidgetsData4 = {
-  title: 'Purchase rate',
+  title: 'Receptions Provisoires',
   gros: 70,
-  total: 5700,
+  total: '18,75%',
   color: 'success',
   icon: 'rate',
 };
@@ -60,13 +60,13 @@ export const WidgetsData1WidgetsPage = [
 ];
 
 export const Widgets2Data = {
-  title: 'Orders',
-  total: '1,80k',
+  title: 'Reception Definitives',
+  total: '18,75%',
   chart: Widgets2ChartData,
 };
 export const Widgets2Data2 = {
-  title: 'Profit',
-  total: '6,90k',
+  title: 'Mise en service',
+  total: '10%',
   chart: Widgets2ChartData2,
 };
 export const Widgets2DataWidgets = {

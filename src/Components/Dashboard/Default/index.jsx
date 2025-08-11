@@ -13,6 +13,8 @@ import TimelineCard from "./TimelineCard";
 import PreAccountCard from "./PreAccountCard";
 import TotalUserAndFollower from "./TotalUserAndFollower";
 import PaperNote from "./PaperNote";
+import ProjectDash from "./project_data_dashboard/index";
+import AgencyDash from "./agency_data_dash/index";
 
 const Dashboard = () => {
   return (
@@ -24,14 +26,16 @@ const Dashboard = () => {
             <GreetingCard />
           </AllowedAccess>
           <WidgetsWrapper />
-          <OverallBalance />
+          <AgencyDash />
+          <ProjectDash />
+          {/* <OverallBalance />
           <RecentOrders />
           <ActivityCard />
           <RecentSales />
           <TimelineCard />
           <PreAccountCard />
           <TotalUserAndFollower />
-          <PaperNote />
+          <PaperNote /> */}
         </Row>
       </Container>
     </Fragment>

@@ -19,6 +19,7 @@ export const MENUITEMS = [
           { path: `${process.env.PUBLIC_URL}/feicom/projets`,      title: "Projets",      type: "link" },
           { path: `${process.env.PUBLIC_URL}/feicom/todos`,        title: "Todos",        type: "link" },
           { path: `${process.env.PUBLIC_URL}/feicom/visites`,      title: "Visites",      type: "link" },
+          { path: `${process.env.PUBLIC_URL}/feicom/exercise`,     title:"Exercise",      type: "link" },
         ],
       },
     ],

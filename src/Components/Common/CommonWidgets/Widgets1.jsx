@@ -20,7 +20,7 @@ const Widgets1 = ({ data }) => {
           </div>
         </div>
         <div className={`font-${data.color} f-w-500`}>
-          <i className={`icon-arrow-${data.gros < 50 ? 'down' : 'up'} icon-rotate me-1`} />
+          {/* <i className={`icon-arrow-${data.gros < 50 ? 'down' : 'up'} icon-rotate me-1`} /> */}
           <span>{`${data.gros < 50 ? '-' : '+'}${data.gros}%`}</span>
         </div>
       </CardBody>

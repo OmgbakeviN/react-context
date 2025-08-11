@@ -4,7 +4,7 @@ import store from '../reduxtool/store'; // Importez votre store Redux
 // Créez une instance Axios de base
 const axiosInstance = axios.create({
   baseURL: 'https://fcom.pythonanywhere.com',
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -14,7 +14,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     // Récupérez le token directement depuis le store Redux
-    const token = store.getState().auth.user?.token;
+    const token = localStorage.getItem('token');
     
     if (token) {
       config.headers.Authorization = `Token ${token}`;

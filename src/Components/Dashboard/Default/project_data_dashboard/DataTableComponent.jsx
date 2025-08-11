@@ -3,7 +3,8 @@ import DataTable from 'react-data-table-component';
 import { Btn, H4 } from '../../../../AbstractElements';
 import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
-import { useNavigate  } from 'react-router';
+import { useNavigate  } from 'react-router-dom';
+import { Filters } from '../../../../Constant';
 
 
 
@@ -39,9 +40,6 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
   const [loadingCommunes, setLoadingCommunes] = useState(false);
   const [loadingExercice, setLoadingExercice] = useState(true);
 
-  useEffect(() => {
-    
-  })
 
   // Charger les entreprises
   useEffect(() => {
@@ -192,7 +190,7 @@ const DeleteConfirm = ({ noms, onConfirm, onCancel }) => (
   </div>
 );
 
-const ProjetTable = () => {
+const ProjetTable = ({ filters = {} }) => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -205,16 +203,32 @@ const ProjetTable = () => {
 
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const { exercice, agence, mois } = filters || {};
+
 
   // -- API fetch --
   const fetchProjets = async () => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.get('/feicom/api/projets/');
-      setData(response.data);
-      setError(null);
-    } catch (err) {
-      setError("Erreur lors de la récupération des projets : " + err.message);
+  setLoading(true);
+  setError(null);
+  try {
+    let response;
+    const hasAll = Boolean(exercice) && Boolean(agence) && Boolean(mois);
+
+    if (hasAll) {
+      // call filter endpoint only when all 3 are present
+      response = await axiosInstance.get(
+        `/feicom/api/filters/projects/${Number(exercice)}/${Number(agence)}/${Number(mois)}/`
+      );
+    } else {
+      // either load full list...
+      response = await axiosInstance.get('/feicom/api/projets/');
+      // ...or skip fetching and just return; choose one behavior:
+      // setLoading(false); return;
+    }
+
+    setData(response.data);
+  } catch (err) {
+    setError("Erreur lors de la récupération des projets : " + (err?.message || String(err)));
     } finally {
       setLoading(false);
     }
@@ -227,7 +241,8 @@ const ProjetTable = () => {
 
   useEffect(() => {
     fetchProjets();
-  }, []);
+
+  }, [exercice, agence, mois]);
 
   // Suppression multiple
   const handleDelete = () => {

@@ -142,10 +142,13 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "autoprefixer": "^10.4.21",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
+    "postcss": "^8.5.6",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.10"
   },
   "overrides": {
     "@svgr/plugin-svgo": "^6.0.0",

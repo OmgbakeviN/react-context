@@ -148,7 +148,7 @@ export const ViewProject = "View project";
 export const BlogMessage = "Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit.";
 
 // Default Dashboard //
-export const WelcomeToCuba = "Welcome to cuba";
+export const WelcomeToCuba = "Welcome to FEICOM";
 export const WelcomeMessage = "Here whats happing in your account today";
 export const WhatsNew = "Whats New !";
 export const OverallBalanceTitle = "Overall Balance";
@@ -171,7 +171,7 @@ export const WeeklyMonDropdown = ["Weekly", "Monthly", "Yearly"];
 export const CryptoDropdown = ["BTC", "ETH", "USD", "LTC"];
 
 // Ecommerce Dashboard //
-export const TotalBalanceTitle = "Total Balance";
+export const TotalBalanceTitle = "Montant Total du Projet";
 export const ThisMonth = "this month";
 export const TapUpBalance = "Tap Up Balance";
 export const ValuableCustomerTitle = "Valuable Customer";

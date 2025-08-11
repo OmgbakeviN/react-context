@@ -5,8 +5,6 @@ import { H4, Image } from '../../../AbstractElements';
 import { TapUpBalance, ThisMonth, TotalBalanceTitle } from '../../../Constant';
 
 import CountUp from 'react-countup';
-import WidgetImg from '../../../assets/images/dashboard-2/widget-img.png';
-import MobileGif from '../../../assets/images/dashboard-2/mobile.gif';
 
 const TotalBalance = () => {
   return (
@@ -17,13 +15,13 @@ const TotalBalance = () => {
           <CountUp prefix='$' duration={5} start={0} separator=',' end={245154} />
           <span className='f-light f-14 f-w-400 ms-1'>{ThisMonth}</span>
         </H4>
-        <Link className='purchase-btn btn btn-primary btn-hover-effect f-w-500' to='#'>
+        {/* <Link className='purchase-btn btn btn-primary btn-hover-effect f-w-500' to='#'>
           {TapUpBalance}
-        </Link>
-        <div className='mobile-right-img'>
+        </Link> */}
+        {/* <div className='mobile-right-img'>
           <Image attrImage={{ className: 'left-mobile-img', src: WidgetImg, alt: '' }} />
           <Image attrImage={{ className: 'mobile-img', src: MobileGif, alt: 'mobile with coin' }} />
-        </div>
+        </div> */}
       </CardBody>
     </Card>
   );

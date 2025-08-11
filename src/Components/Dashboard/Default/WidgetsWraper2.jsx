@@ -5,7 +5,6 @@ import Widgets1 from '../../Common/CommonWidgets/Widgets1';
 import Widgets2 from '../../Common/CommonWidgets/Widgets2';
 
 const WidgetsWrapper = () => {
-  
   return (
     <>
       <Col xxl='auto' xl='3' sm='6' className='box-col-6'>
