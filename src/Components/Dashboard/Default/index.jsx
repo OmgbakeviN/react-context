@@ -26,7 +26,6 @@ const Dashboard = () => {
             <GreetingCard />
           </AllowedAccess>
           <WidgetsWrapper />
-          <AgencyDash />
           <ProjectDash />
           <WidgetsWrapper />
           <AgencyDash />

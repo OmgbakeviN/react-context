@@ -1,9 +1,11 @@
 import { Widgets2ChartData, Widgets2ChartData2, Widgets2ChartData2Widgets, Widgets2ChartDataWidgets } from './Chart';
+import axiosInstance from '../../api/axios';
 
-export const WidgetsData = {
-  title: 'Nombre Dagences',
+
+export const WidgetsData1 = {
+  title: 'Nombre d\'agences',
   gros: 50,
-  total: 10,
+  total: null, //will be filled by api later
   color: 'secondary',
   icon: 'cart',
 };
@@ -28,6 +30,20 @@ export const WidgetsData4 = {
   color: 'success',
   icon: 'rate',
 };
+export const WidgetsData5 = {
+  title: 'Receptions Definitives',
+  gros: 70,
+  total: '18,75%',
+  color: 'success',
+  icon: 'rate',
+};
+export const WidgetsData6 = {
+  title: 'Mise en service',
+  gros: 70,
+  total: '18,75%',
+  color: 'success',
+  icon: 'rate',
+}
 export const WidgetsData1WidgetsPage = [
   {
     title: 'Purchase',

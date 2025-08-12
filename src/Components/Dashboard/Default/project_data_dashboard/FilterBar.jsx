@@ -82,7 +82,7 @@ const FilterBar = ({
         color="primary" 
         className="flex-grow-1" 
         onClick={onApply} 
-        disabled={loading || !values.exercice || !values.agence }
+        disabled={loading || !values.exercice || !values.agence || !values.mois }
       >
         {loading ? <span className="spinner-border spinner-border-sm me-1"></span> : 'Filtrer'}
       </Button>
