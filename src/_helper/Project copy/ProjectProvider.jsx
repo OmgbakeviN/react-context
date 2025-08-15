@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Context from './index';
-import axiosInstance from '../../api/axios';
+import axios from 'axios';
 import { AllProjectApi } from '../../api';
 
 const ProjectProvider = (props) => {
@@ -9,7 +9,7 @@ const ProjectProvider = (props) => {
 
     const getAllProjectData = async () => {
         try {
-            await axiosInstance.get(AllProjectApi).then((resp) => {
+            await axios.get(AllProjectApi).then((resp) => {
                 setAllData(resp.data);
             });
         } catch (error) {
@@ -23,17 +23,20 @@ const ProjectProvider = (props) => {
 
     const addNewProject = (projectData) => {
         const projectTemp = {
-            id: projectData.id,
-            libelle: projectData.libelle,
-            duree: projectData.duree,
-            montant_ht: projectData.montant_ht,
-            type: projectData.type,
-            numero_convention: projectData.numero_convention,
-            date_debut: projectData.date_debut,
-            date_fin: projectData.date_fin,
-            entreprise: projectData.entreprise,
-            commune: projectData.commune,
-            exercice: projectData.exercice
+            id: allData.length + 1,
+            title: projectData.title,
+            badge: projectData.badge,
+            img: 'user/3.jpg',
+            sites: 'Themeforest, australia',
+            desc: projectData.desc,
+            issue: projectData.issues,
+            resolved: projectData.resolved,
+            comment: projectData.comment,
+            like: '10',
+            progress: '70',
+            customers_img1: 'user/3.jpg',
+            customers_img2: 'user/5.jpg',
+            customers_img3: 'user/1.jpg'
         };
         setAllData([...allData, projectTemp]);
     };

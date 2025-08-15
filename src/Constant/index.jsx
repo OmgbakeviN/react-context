@@ -151,10 +151,10 @@ export const BlogMessage = "Amet minim mollit non deserunt ullamco est sit aliqu
 export const WelcomeToCuba = "Welcome to FEICOM";
 export const WelcomeMessage = "Here whats happing in your account today";
 export const WhatsNew = "Whats New !";
-export const OverallBalanceTitle = "Overall Balance";
-export const Earning = "Earning";
-export const Expense = "Expense";
-export const RecentOrdersTitle = "Recent Orders";
+export const OverallBalanceTitle = "stat Globales ";
+export const Earning = "Total de profit";
+export const Expense = "Progression des projets";
+export const RecentOrdersTitle = "total Project";
 export const Cancelled = "Cancelled";
 export const Delivered = "Delivered";
 export const LastMonth = "Last 6 Month";
@@ -265,9 +265,11 @@ export const UploadProjectFile = "Upload project file";
 export const Add = "Add";
 export const CreateNewProject = "Create New Project";
 
-export const Issues = "Issues";
-export const Resolved = "Resolved";
-export const Comment = "Comment";
+export const Issues = "Montant HT";
+export const Resolved = "Date de Debut: ";
+export const Comment = "Date de Fin: ";
+export const Comment2 = "Entreprise: ";
+
 
 // ecommerce
 export const Filters = "Filters";

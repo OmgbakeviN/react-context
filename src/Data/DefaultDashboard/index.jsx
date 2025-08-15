@@ -12,35 +12,35 @@ export const WidgetsData1 = {
 export const WidgetsData2 = {
   title: 'Projets',
   gros: 20,
-  total: 7,
+  total: null, //will be filled by api later
   color: 'warning',
   icon: 'return-box',
 };
 export const WidgetsData3 = {
-  title: 'Paiments',
+  title: 'Decomptes',
   gros: '27%',
-  total: 4_200,
+  total: null, //will be filled by api later
   color: 'primary',
   icon: 'tag',
 };
 export const WidgetsData4 = {
   title: 'Receptions Provisoires',
   gros: 70,
-  total: '18,75%',
+  total: null, //will be filled by api later
   color: 'success',
   icon: 'rate',
 };
 export const WidgetsData5 = {
   title: 'Receptions Definitives',
   gros: 70,
-  total: '18,75%',
+  total: null, //will be filled by api later
   color: 'success',
   icon: 'rate',
 };
 export const WidgetsData6 = {
   title: 'Mise en service',
   gros: 70,
-  total: '18,75%',
+  total: null, //will be filled by api later
   color: 'success',
   icon: 'rate',
 }
@@ -102,23 +102,23 @@ export const Widgets2Data2Widgets = {
 
 export const LightCardData = [
   {
-    title: 'Income',
+    title: 'Total des projets: ',
     icon: 'income',
-    price: '$22,678',
-    gros: '+$456',
+    price: '',
+    gros: '5',
     color: 'success',
   },
   {
-    title: 'Expense',
+    title: 'Total des communes',
     icon: 'expense',
-    price: '$12,057',
-    gros: '+$256',
+    price: '',
+    gros: '332',
     color: 'danger',
   },
   {
-    title: 'Cashback',
-    icon: 'doller-return',
-    price: '$8,475',
+    title: 'Progression',
+    icon: 'expense',
+    price: '45%',
   },
 ];
 export const LightCardData2 = [

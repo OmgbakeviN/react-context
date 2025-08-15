@@ -14,6 +14,8 @@ import PreAccountCard from "./PreAccountCard";
 import TotalUserAndFollower from "./TotalUserAndFollower";
 import PaperNote from "./PaperNote";
 import ProjectDash from "./project_data_dashboard/index";
+import ProjectDash2 from "./project_data_dashboard_2/index";
+import WidgetsWrapper2  from "./WidgetsWraper2";
 import AgencyDash from "./agency_data_dash/index";
 
 const Dashboard = () => {
@@ -22,16 +24,18 @@ const Dashboard = () => {
       <Breadcrumbs mainTitle="Default" parent="Dashboard" title="Default" />
       <Container fluid={true}>
         <Row className="widget-grid">
-          <AllowedAccess roles={['NATIONAL']}>
+          <AllowedAccess roles={['NATIONAL','REGIONAL']}>
             <GreetingCard />
           </AllowedAccess>
           <WidgetsWrapper />
-          <ProjectDash />
+          {/* <ProjectDash />
           <WidgetsWrapper />
-          <AgencyDash />
-          {/* <OverallBalance />
+          <ProjectDash2 />
+          <WidgetsWrapper2 />
+          <AgencyDash /> */}
+          <OverallBalance />
           <RecentOrders />
-          <ActivityCard />
+          {/* <ActivityCard />
           <RecentSales />
           <TimelineCard />
           <PreAccountCard />

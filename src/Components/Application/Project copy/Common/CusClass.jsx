@@ -7,52 +7,38 @@ const CusClass = ({ item }) => {
   return (
     <Col className='col-xxl-4' md='6'>
       <div className='project-box'>
-        {/* <span className={`badge ${item.badge === 'Done' ? 'badge-success' : 'badge-primary'}`}>{item.badge}</span> */}
-        <H6>Nom de Projet: {item.libelle}</H6>
+        <span className={`badge ${item.badge === 'Done' ? 'badge-success' : 'badge-primary'}`}>{item.badge}</span>
+        <H6>{item.title}</H6>
         <div className='media'>
-          {/* <Image attrImage={{ className: 'img-20 me-1 rounded-circle', src: `${require(`../../../../assets/images/${item.img}`)}`, alt: '' }} /> */}
+          <Image attrImage={{ className: 'img-20 me-1 rounded-circle', src: `${require(`../../../../assets/images/${item.img}`)}`, alt: '' }} />
           <div className='media-body'>
-            <P>Type: {item.type} | Annee D'exercice: {item.exercice} </P>
+            <P>{item.sites}</P>
           </div>
         </div>
-        <P>Donnees du Projet {item.libelle} Convention: {item.numero_convention}</P>
+        <P>{item.desc}</P>
         <Row className='details'>
           <Col xs='6'>
             <span>{Issues} </span>
           </Col>
           <Col xs='6' className={item.badge === 'Done' ? 'font-success' : 'font-primary'}>
-            {item.montant_ht}
+            {item.issue}
           </Col>
           <Col xs='6'>
             {' '}
             <span>{Resolved}</span>
           </Col>
           <Col xs='6' className={item.badge === 'Done' ? 'font-success' : 'font-primary'}>
-            {item.date_debut}
+            {item.resolved}
           </Col>
           <Col xs='6'>
             {' '}
             <span>{Comment}</span>
           </Col>
           <Col xs='6' className={item.badge === 'Done' ? 'font-success' : 'font-primary'}>
-            {item.date_fin}
-          </Col>
-          <Col xs='6'>
-            {' '}
-            <span>Entreprise: </span>
-          </Col>
-          <Col xs='6' className={item.badge === 'Done' ? 'font-success' : 'font-primary'}>
-            {item.entreprise}
-          </Col>
-          <Col xs='6'>
-            {' '}
-            <span>Commune: </span>
-          </Col>
-          <Col xs='6' className={item.badge === 'Done' ? 'font-success' : 'font-primary'}>
-            {item.commune}
+            {item.comment}
           </Col>
         </Row>
-        {/* <div className='customers'>
+        <div className='customers'>
           <UL attrUL={{ className: 'd-inline-block' }}>
             <LI attrLI={{ className: 'd-inline-block border-0' }}>
               <Image attrImage={{ className: 'img-30 rounded-circle', src: `${require(`../../../../assets/images/${item.customers_img1}`)}`, alt: '' }} />
@@ -67,15 +53,15 @@ const CusClass = ({ item }) => {
               <P attrPara={{ className: 'f-12' }}>{`+${item.like} More`}</P>
             </LI>
           </UL>
-        </div> */}
+        </div>
         <div className='project-status mt-4'>
           <div className='media mb-0'>
-            <P>Completion: {item.commune}% </P>
-            {/* <div className='media-body text-end'>
+            <P>{item.progress}% </P>
+            <div className='media-body text-end'>
               <span>{Done}</span>
-            </div> */}
+            </div>
           </div>
-          {item.commune === '100' ? <Progress className='sm-progress-bar' color='success' value={item.commune} style={{ height: '5px' }} /> : <Progress className='sm-progress-bar' striped color='primary' value={item.commune} style={{ height: '5px' }} />}
+          {item.progress === '100' ? <Progress className='sm-progress-bar' color='success' value={item.progress} style={{ height: '5px' }} /> : <Progress className='sm-progress-bar' striped color='primary' value={item.progress} style={{ height: '5px' }} />}
         </div>
       </div>
     </Col>
