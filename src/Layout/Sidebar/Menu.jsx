@@ -62,8 +62,4 @@ export const MENUITEMS = [
     ],
   },
 
-  
-
-
-
 ];
