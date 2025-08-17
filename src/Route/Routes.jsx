@@ -180,6 +180,12 @@ import FormTouchspinContain from "../Components/Forms/FormWidget/FormTouchspin";
 import FormClipboardContain from "../Components/Forms/FormWidget/FormClipboard";
 import FAQContent from "../Components/FAQ";
 
+
+/// Importing our Feicom Custom Page
+import Page1 from "../Components/Pages/FeicomPages/HomePage";
+import SingleProject from "../Components/Pages/FeicomPages/ProjectPage";
+
+
 export const routes = [
   { path: `${process.env.PUBLIC_URL}/dashboard/default/:layout`, Component: <Default /> },
   { path: `${process.env.PUBLIC_URL}/dashboard/e-commerce/:layout`, Component: <Ecommerce /> },
@@ -344,4 +350,9 @@ export const routes = [
 
   // //Faq
   { path: `${process.env.PUBLIC_URL}/app/faq/:layout`, Component: <FAQContent /> },
+
+  // Feicom Custom Routes : Here are our own pages and components we have created
+  { path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/:layout`, Component: <Page1 /> },
+   { path: `${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/:layout`, Component: <SingleProject /> },
+
 ];

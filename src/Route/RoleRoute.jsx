@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { Layouts } from "../Constant";
 
 const RoleRoute = ({ allowed }) => {
   const { user } = useSelector((state) => state.auth);
@@ -20,7 +21,8 @@ const RoleRoute = ({ allowed }) => {
   if (!allowed.includes(role)) {
     return (
       <Navigate
-        to={`${process.env.PUBLIC_URL}/pages/errors/error401/${layout}`}
+      // error here
+        to={`${process.env.PUBLIC_URL}/pages/errors/error401/${Layouts}`}
         replace
       />
     );

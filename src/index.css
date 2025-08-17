@@ -24,6 +24,7 @@
 @import "~leaflet/dist/leaflet.css";
 @import "~react-image-lightbox/style.css";
 @import "~react-perfect-scrollbar/dist/css/styles.css";
+
 :root {
   --bs-blue: #0d6efd;
   --bs-indigo: #6610f2;

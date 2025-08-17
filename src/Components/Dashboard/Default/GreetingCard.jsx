@@ -46,7 +46,7 @@ const GreetingCard = () => {
             </div>
           </Media>
           <div className='cartoon'>
-            <Image attrImage={{ src: CarToon, alt: 'vector women with leptop' }} />
+            <Image attrImage={{ src: CarToon, alt: 'vector women with laptop' }} />
           </div>
         </CardBody>
       </Card>
