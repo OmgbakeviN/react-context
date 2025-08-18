@@ -21,8 +21,11 @@ import ComingBgImg from '../Components/Pages/ComingSoon/ComingBgImg';
 import ComingBgVideo from '../Components/Pages/ComingSoon/ComingBgVideo';
 import Error500 from '../Components/Pages/ErrorPages/ErrorPage500';
 import Error503 from '../Components/Pages/ErrorPages/ErrorPage503';
+import Page1 from '../Components/Pages/FeicomPages/HomePage';
 
 export const authRoutes = [
+  { path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/:layout`, Component: <Page1 /> },
+  
   { path: `${process.env.PUBLIC_URL}/login`, Component: <Logins /> },
   { path: `${process.env.PUBLIC_URL}/pages/authentication/login-simple/:layout`, Component: <LoginForm /> },
   { path: `${process.env.PUBLIC_URL}/pages/authentication/login-img/:layout`, Component: <LoginOne /> },

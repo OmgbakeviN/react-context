@@ -28,11 +28,11 @@ const Routers = () => {
   const role = parsedUser?.role;
 
   
-  let defaultRedirect = `${process.env.PUBLIC_URL}/dashboard/default/${layout}`;
+  let defaultRedirect = `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/${layout}`;
   if (role === "REGIONAL") {
-    defaultRedirect = `${process.env.PUBLIC_URL}/dashboard/default/${layout}`;
+    defaultRedirect = `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/${layout}`;
   } else if (role === "NATIONAL") {
-    defaultRedirect = `${process.env.PUBLIC_URL}/dashboard/default/${layout}`;
+    defaultRedirect = `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/${layout}`;    
   }
 
   useEffect(() => {

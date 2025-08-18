@@ -1,11 +1,11 @@
-import React, { Fragment, useContext, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import {
   Container, Row, Col, Card, CardBody, Nav, NavItem, NavLink, TabContent, TabPane,
   Spinner, Alert, Input, Label
 } from 'reactstrap';
-import { Target, Info, CheckCircle, PlusCircle } from 'react-feather';
-import { Link } from 'react-router-dom';
-import { Done, All, Doing, CreateNewProject } from '../../../../Constant';
+import { Target, Info, CheckCircle /*, PlusCircle */ } from 'react-feather';
+import { /* Link, */ } from 'react-router-dom';
+import { Done, All, Doing /*, CreateNewProject */ } from '../../../../Constant';
 import { Breadcrumbs } from '../../../../AbstractElements';
 import ProjectContext from '../../../../_helper/Project';
 import CusClass from '../Common/CusClass';
@@ -17,36 +17,41 @@ const Project = () => {
   const { layoutURL } = useContext(CustomizerContext);
   const { allData }   = useContext(ProjectContext);
 
+  // Onglets
   const [activeTab, setActiveTab] = useState('1');
 
-  // user infos
+  // User
   const [user, setUser] = useState(null);
 
-  // filter bar state
+  // Filtres (FilterBar)
   const [exerciceOptions, setExerciceOptions] = useState([]);
   const [agenceOptions, setAgenceOptions]     = useState([]);
   const [communeOptions, setCommuneOptions]   = useState([]);
   const [filters, setFilters] = useState({ exercice: '', mois: '', agence: '', communes: [] });
   const [loadingFilters, setLoadingFilters] = useState(false);
 
-  // network state
+  // Réseau / données
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
 
-  // data layers
-  const [baseData, setBaseData]       = useState([]); // server (all or server-filtered)
-  const [displayData, setDisplayData] = useState([]); // baseData filtered by communes + search
+  // Couches de données
+  const [baseData, setBaseData]       = useState([]); // résultat serveur (filtré ou non)
+  const [displayData, setDisplayData] = useState([]); // baseData filtré par communes + search
 
+  // Recherche
   const [search, setSearch] = useState('');
 
-  // init user
+  // Infinite scroll
+  const [visibleItems, setVisibleItems] = useState(20);
+  const loaderRef = useRef(null);
+
+  // --- init user ---
   useEffect(() => {
     try {
       const raw = localStorage.getItem('user');
       if (raw) {
         const parsed = JSON.parse(raw);
         setUser(parsed);
-        // si regional → set agence direct
         if (parsed?.role === 'REGIONAL' && parsed?.agence) {
           setFilters(f => ({ ...f, agence: parsed.agence }));
         }
@@ -54,7 +59,7 @@ const Project = () => {
     } catch {}
   }, []);
 
-  // charger communes 
+  // --- charger communes ---
   useEffect(() => {
     (async () => {
       try {
@@ -67,7 +72,7 @@ const Project = () => {
     })();
   }, []);
 
-  // charger exercices
+  // --- charger exercices ---
   useEffect(() => {
     (async () => {
       setLoadingFilters(true);
@@ -84,7 +89,7 @@ const Project = () => {
     })();
   }, []);
 
-  // charger agences si NATIONAL
+  // --- charger agences si NATIONAL ---
   useEffect(() => {
     if (user?.role === 'NATIONAL') {
       (async () => {
@@ -100,12 +105,12 @@ const Project = () => {
     }
   }, [user]);
 
-  // sync baseData with allData initially
+  // --- sync baseData with allData initially ---
   useEffect(() => {
     setBaseData(allData || []);
   }, [allData]);
 
-  // ------- AUTO FETCH: exercice+mois+agence complete -> call server filter, else use allData -------
+  // --- AUTO FETCH serveur si exercice+mois+agence sont remplis; sinon fallback allData ---
   useEffect(() => {
     const { exercice, mois, agence } = filters;
     const agenceId = user?.role === 'NATIONAL' ? agence : user?.agence;
@@ -123,7 +128,6 @@ const Project = () => {
           const list = Array.isArray(res.data) ? res.data : (res.data?.results ?? []);
           if (!cancelled) setBaseData(list);
         } else {
-          // no server filter -> fallback to full list from context
           if (!cancelled) setBaseData(allData || []);
         }
       } catch (e) {
@@ -139,18 +143,18 @@ const Project = () => {
     return () => { cancelled = true; };
   }, [filters.exercice, filters.mois, filters.agence, user, allData]);
 
-  // ------- CLIENT FILTERS: communes + search applied locally to baseData -------
+  // --- Filtre communes + recherche (local) ---
   useEffect(() => {
     const { communes } = filters;
 
-    // 1) filter by communes (optional)
+    // 1) filtrer par communes
     let afterCommunes = baseData;
     if (Array.isArray(communes) && communes.length > 0) {
       const setIds = new Set(communes.map(Number));
       afterCommunes = baseData.filter(p => setIds.has(Number(p.commune)));
     }
 
-    // 2) apply search text
+    // 2) recherche texte
     const q = search.trim().toLowerCase();
     const afterSearch = !q
       ? afterCommunes
@@ -161,11 +165,46 @@ const Project = () => {
     setDisplayData(afterSearch);
   }, [baseData, filters.communes, search]);
 
-  // search memo (optional, displayData is already filtered)
-  const searchedData = useMemo(() => displayData, [displayData]);
+  // --- Réinitialiser le scroll si filtres/recherche changent ---
+  useEffect(() => {
+    setVisibleItems(20);
+  }, [filters.exercice, filters.mois, filters.agence, filters.communes, search]);
 
+  // --- listAll / doing / done (placeholder pour l’instant) ---
+  const listAll   = useMemo(() => displayData, [displayData]);
+  const listDoing = useMemo(() => displayData.filter(() => false), [displayData]); // à adapter si tu as un statut
+  const listDone  = useMemo(() => displayData.filter(() => false), [displayData]); // à adapter si tu as un statut
+
+  // --- elements visibles (infinite scroll) : se base sur listAll (DÉFINI ICI) ---
+  const displayedData = useMemo(() => {
+    return listAll.slice(0, visibleItems);
+  }, [listAll, visibleItems]);
+
+  // --- Observer pour infinite scroll (utilise displayedData.length) ---
+  const handleObserver = useCallback((entries) => {
+    const [target] = entries;
+    if (target.isIntersecting && visibleItems < listAll.length) {
+      setVisibleItems(prev => prev + 20);
+    }
+  }, [listAll.length, visibleItems]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 0.1,
+    });
+
+    const el = loaderRef.current;
+    if (el) observer.observe(el);
+
+    return () => {
+      if (el) observer.unobserve(el);
+    };
+  }, [handleObserver]);
+
+  // handlers
   const handleChange = (name, value) => setFilters(prev => ({ ...prev, [name]: value }));
-
   const handleReset = () => {
     setFilters({
       exercice: '',
@@ -175,12 +214,7 @@ const Project = () => {
     });
     setSearch('');
     setError(null);
-    // baseData will auto-become allData via effect above
   };
-
-  const listAll   = searchedData;
-  const listDoing = searchedData.filter(() => false); 
-  const listDone  = searchedData.filter(() => false); 
 
   return (
     <Fragment>
@@ -219,13 +253,15 @@ const Project = () => {
                       onChange={e => setSearch(e.target.value)}
                     />
                   </div>
-                  {/* <Link
+                  {/* 
+                  <Link
                     className="btn btn-primary"
                     style={{ color: 'white' }}
                     to={`${process.env.PUBLIC_URL}/app/project/new-project/${layoutURL}`}
                   >
                     <PlusCircle /> {CreateNewProject}
-                  </Link> */}
+                  </Link> 
+                  */}
                 </Col>
               </Row>
             </Card>
@@ -265,32 +301,81 @@ const Project = () => {
             <Card>
               <CardBody>
                 <TabContent activeTab={activeTab}>
+                  {/* ALL */}
                   <TabPane tabId="1">
-                    <Row>
-                      {listAll.length === 0 ? (
-                        <Col xs="12"><Alert color="info" className="mb-0">Aucun projet.</Alert></Col>
-                      ) : (
-                        listAll.map((item, i) => <CusClass item={item} key={item.id ?? i} />)
-                      )}
+                    <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+                      {displayedData.map((item, i) => (
+                        <Col key={item.id ?? i}>
+                          <CusClass item={item} />
+                        </Col>
+                      ))}
                     </Row>
+
+                    <div ref={loaderRef} className="d-flex justify-content-center">
+                      {visibleItems < listAll.length ? (
+                        <Spinner color="primary" />
+                      ) : (
+                        listAll.length > 0 && (
+                          <Alert color="info" className="mb-0 mt-3">
+                            Vous avez atteint la fin de la liste ({listAll.length} projets)
+                          </Alert>
+                        )
+                      )}
+                    </div>
+
+                    {listAll.length === 0 && !loading && (
+                      <Alert color="info" className="mb-0">Aucun projet.</Alert>
+                    )}
                   </TabPane>
+
+                  {/* DOING (placeholder) */}
                   <TabPane tabId="2">
-                    <Row>
-                      {listDoing.length === 0 ? (
-                        <Col xs="12"><Alert color="info" className="mb-0">Aucun projet en cours.</Alert></Col>
-                      ) : (
-                        listDoing.map((item, i) => <CusClass item={item} key={item.id ?? i} />)
-                      )}
+                    <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+                      {listDoing.slice(0, visibleItems).map((item, i) => (
+                        <Col key={item.id ?? i}>
+                          <CusClass item={item} />
+                        </Col>
+                      ))}
                     </Row>
+                    <div ref={loaderRef} className="d-flex justify-content-center">
+                      {visibleItems < listDoing.length ? (
+                        <Spinner color="primary" />
+                      ) : (
+                        listDoing.length > 0 && (
+                          <Alert color="info" className="mb-0 mt-3">
+                            Vous avez atteint la fin de la liste ({listDoing.length} projets)
+                          </Alert>
+                        )
+                      )}
+                    </div>
+                    {listDoing.length === 0 && !loading && (
+                      <Alert color="info" className="mb-0">Aucun projet en cours.</Alert>
+                    )}
                   </TabPane>
+
+                  {/* DONE (placeholder) */}
                   <TabPane tabId="3">
-                    <Row>
-                      {listDone.length === 0 ? (
-                        <Col xs="12"><Alert color="info" className="mb-0">Aucun projet terminé.</Alert></Col>
-                      ) : (
-                        listDone.map((item, i) => <CusClass item={item} key={item.id ?? i} />)
-                      )}
+                    <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+                      {listDone.slice(0, visibleItems).map((item, i) => (
+                        <Col key={item.id ?? i}>
+                          <CusClass item={item} />
+                        </Col>
+                      ))}
                     </Row>
+                    <div ref={loaderRef} className="d-flex justify-content-center ">
+                      {visibleItems < listDone.length ? (
+                        <Spinner color="primary" />
+                      ) : (
+                        listDone.length > 0 && (
+                          <Alert color="info" className="mb-0 mt-3">
+                            Vous avez atteint la fin de la liste ({listDone.length} projets)
+                          </Alert>
+                        )
+                      )}
+                    </div>
+                    {listDone.length === 0 && !loading && (
+                      <Alert color="info" className="mb-0">Aucun projet terminé.</Alert>
+                    )}
                   </TabPane>
                 </TabContent>
               </CardBody>
