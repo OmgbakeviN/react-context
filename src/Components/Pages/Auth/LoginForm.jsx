@@ -7,6 +7,7 @@ import {  toast } from "react-toastify";
 import CustomizerContext from "../../../_helper/Customizer"
 import { loginUser } from '../../../reduxtool/Auth';
 import { useDispatch } from 'react-redux';
+import { PermissionContext } from 'react-permission-role';
 
 
 import logoWhite from '../../../assets/images/logo/logo.png';
@@ -17,6 +18,8 @@ const LoginForm = ({ logoClassMain }) => {
   const [togglePassword, setTogglePassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { setUser } = useContext(PermissionContext);
+
 
 
   const { layoutURL } = useContext(CustomizerContext);
@@ -32,10 +35,15 @@ const LoginForm = ({ logoClassMain }) => {
 
       if (loginUser.fulfilled.match(user)) {
         toast.success(`Welcome back ${user.payload.username}!`);
+        setUser({
+          id: user.payload.id, // ou autre identifiant
+          roles: [user.payload.role], // si ton user a un seul rôle
+          permissions: user.payload.permissions || [] // si tu as des permissions, sinon []
+        });
         // navigate(`${process.env.PUBLIC_URL}/dashboard/default/${layoutURL}`);
         let target = `0`;
         if (user.payload.role === 'REGIONAL') {
-          target = `${process.env.PUBLIC_URL}/dashboard/e-commerce/${layoutURL}`;
+          target = `${process.env.PUBLIC_URL}/dashboard/default/${layoutURL}`;
         } else if (user.payload.role === 'NATIONAL') {
           target = `${process.env.PUBLIC_URL}/dashboard/default/${layoutURL}`;
         }

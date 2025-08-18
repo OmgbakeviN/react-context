@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
 import { Container, Row } from "reactstrap";
 import { Breadcrumbs } from "../../../AbstractElements";
+import { AllowedAccess } from 'react-permission-role'; 
 
 import OverallBalance from "./OverallBalance";
 import GreetingCard from "./GreetingCard";
@@ -12,6 +13,10 @@ import TimelineCard from "./TimelineCard";
 import PreAccountCard from "./PreAccountCard";
 import TotalUserAndFollower from "./TotalUserAndFollower";
 import PaperNote from "./PaperNote";
+import ProjectDash from "./project_data_dashboard/index";
+import ProjectDash2 from "./project_data_dashboard_2/index";
+import WidgetsWrapper2  from "./WidgetsWraper2";
+import AgencyDash from "./agency_data_dash/index";
 
 const Dashboard = () => {
   return (
@@ -19,16 +24,23 @@ const Dashboard = () => {
       <Breadcrumbs mainTitle="Default" parent="Dashboard" title="Default" />
       <Container fluid={true}>
         <Row className="widget-grid">
-          <GreetingCard />
+          <AllowedAccess roles={['NATIONAL','REGIONAL']}>
+            <GreetingCard />
+          </AllowedAccess>
           <WidgetsWrapper />
+          {/* <ProjectDash />
+          <WidgetsWrapper />
+          <ProjectDash2 />
+          <WidgetsWrapper2 />
+          <AgencyDash /> */}
           <OverallBalance />
           <RecentOrders />
-          <ActivityCard />
+          {/* <ActivityCard />
           <RecentSales />
           <TimelineCard />
           <PreAccountCard />
           <TotalUserAndFollower />
-          <PaperNote />
+          <PaperNote /> */}
         </Row>
       </Container>
     </Fragment>

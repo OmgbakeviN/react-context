@@ -9,7 +9,7 @@ const BasicBtn = () => {
   return (
     <Fragment>
       <Btn attrBtn={{ color: 'primary', onClick: toggle }} >{Simple}</Btn>
-      <CommonModal isOpen={modal} title={ModalTitle} toggler={toggle} >....</CommonModal>
+      <CommonModal isOpen={modal} title={ModalTitle} toggler={toggle} >test</CommonModal>
     </Fragment>
   );
 };

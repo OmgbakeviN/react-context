@@ -1,33 +1,49 @@
 import { Widgets2ChartData, Widgets2ChartData2, Widgets2ChartData2Widgets, Widgets2ChartDataWidgets } from './Chart';
+import axiosInstance from '../../api/axios';
 
-export const WidgetsData = {
-  title: 'Purchase',
+
+export const WidgetsData1 = {
+  title: 'Nombre d\'agences',
   gros: 50,
-  total: 10_000,
+  total: null, //will be filled by api later
   color: 'secondary',
   icon: 'cart',
 };
 export const WidgetsData2 = {
-  title: 'Sales return',
+  title: 'Projets',
   gros: 20,
-  total: 7000,
+  total: null, //will be filled by api later
   color: 'warning',
   icon: 'return-box',
 };
 export const WidgetsData3 = {
-  title: 'Sales',
-  gros: 70,
-  total: 4_200,
+  title: 'Decomptes',
+  gros: '27%',
+  total: null, //will be filled by api later
   color: 'primary',
   icon: 'tag',
 };
 export const WidgetsData4 = {
-  title: 'Purchase rate',
+  title: 'Receptions Provisoires',
   gros: 70,
-  total: 5700,
+  total: null, //will be filled by api later
   color: 'success',
   icon: 'rate',
 };
+export const WidgetsData5 = {
+  title: 'Receptions Definitives',
+  gros: 70,
+  total: null, //will be filled by api later
+  color: 'success',
+  icon: 'rate',
+};
+export const WidgetsData6 = {
+  title: 'Mise en service',
+  gros: 70,
+  total: null, //will be filled by api later
+  color: 'success',
+  icon: 'rate',
+}
 export const WidgetsData1WidgetsPage = [
   {
     title: 'Purchase',
@@ -60,14 +76,18 @@ export const WidgetsData1WidgetsPage = [
 ];
 
 export const Widgets2Data = {
-  title: 'Orders',
-  total: '1,80k',
+  title: 'Reception Definitives',
+  total: '18,75%',
+  color: 'success',
+  gros: 70,
   chart: Widgets2ChartData,
 };
 
 export const Widgets2Data2 = {
-  title: 'Profit',
-  total: '6,90k',
+  title: 'Mise en service',
+  color: 'success',
+  gros: 70,
+  total: '10%',
   chart: Widgets2ChartData2,
 };
 export const Widgets2DataWidgets = {
@@ -129,23 +149,23 @@ export const Widgets2Data2c = {
 
 export const LightCardData = [
   {
-    title: 'Income',
+    title: 'Total des projets: ',
     icon: 'income',
-    price: '$22,678',
-    gros: '+$456',
+    price: '',
+    gros: '5',
     color: 'success',
   },
   {
-    title: 'Expense',
+    title: 'Total des communes',
     icon: 'expense',
-    price: '$12,057',
-    gros: '+$256',
+    price: '',
+    gros: '332',
     color: 'danger',
   },
   {
-    title: 'Cashback',
-    icon: 'doller-return',
-    price: '$8,475',
+    title: 'Progression',
+    icon: 'expense',
+    price: '45%',
   },
 ];
 export const LightCardData2 = [

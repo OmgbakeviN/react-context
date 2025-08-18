@@ -9,8 +9,8 @@ const LoginTwo = () => {
       <section>
         <Container fluid={true}>
           <Row>
-            <Col xl='7' className='b-center bg-size' style={{ backgroundImage: `url(${require('../../../assets/images/login/2.jpg')})`, backgroundSize: 'cover', backgroundPosition: 'center', display: 'block' }}>
-              <Image attrImage={{ className: 'bg-img-cover bg-center d-none', src: `${require('../../../assets/images/login/2.jpg')}`, alt: 'looginpage' }} />
+            <Col xl='7' className='b-center bg-size' style={{ backgroundImage: `url(${require('../../../assets/images/login/2.png')})`, backgroundSize: 'cover', backgroundPosition: 'center', display: 'block' }}>
+              <Image attrImage={{ className: 'bg-img-cover bg-center d-none', src: `${require('../../../assets/images/login/2.png')}`, alt: 'looginpage' }} />
             </Col>
             <Col xl='5 p-0'>
               <LoginForm logoClassMain='text-start' />

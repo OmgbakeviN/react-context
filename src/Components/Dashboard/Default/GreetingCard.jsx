@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardBody, Col, Media } from 'reactstrap';
 import { H4, P, Btn, Image } from '../../../AbstractElements';
-import { WelcomeMessage, WelcomeToCuba, WhatsNew } from '../../../Constant';
+import {  WelcomeToCuba, WhatsNew } from '../../../Constant';
 
 import CarToon from '../../../assets/images/dashboard/cartoon.svg';
 
 const GreetingCard = () => {
+  const [welcomeMessage, setWelcomeMessage] = useState('')
+
+  useEffect (() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    if (user && user.role) {
+      if (user.role === 'NATIONAL') {
+        setWelcomeMessage('NATIONAL FEICOM AGENCY');
+      } else if (user.role === 'REGIONAL') {
+        setWelcomeMessage('REGIONAL FEICOM AGENCY');
+      } else {
+        setWelcomeMessage('FEICOM Agency'); // A default message for other roles
+      }
+    } else {
+      setWelcomeMessage('Welcome!'); // A default message if no user is found
+    }
+  }, []);
+
   return (
     <Col className='col-xxl-4 col-sm-6 box-col-6'>
       <Card className=' profile-box'>
@@ -13,10 +31,10 @@ const GreetingCard = () => {
           <Media>
             <Media body>
               <div className='greeting-user'>
-                <H4 attrH4={{ className: 'f-w-600' }}>{WelcomeToCuba}</H4>
-                <P>{WelcomeMessage}</P>
+                <H4 id = "welcome" attrH4={{ className: 'f-w-600' }}>{welcomeMessage}</H4>
+                <P>Here whats happing in your account today</P>
                 <div className='whatsnew-btn'>
-                  <Btn attrBtn={{ color: 'transparent', outline: true, className: 'btn btn-outline-white' }}>{WhatsNew}</Btn>
+                  {/* <Btn attrBtn={{ color: 'transparent', outline: true, className: 'btn btn-outline-white' }}>{WhatsNew}</Btn> */}
                 </div>
               </div>
             </Media>

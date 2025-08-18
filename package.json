@@ -64,6 +64,7 @@
     "react-leaflet": "^4.2.1",
     "react-masonry-css": "^1.0.16",
     "react-perfect-scrollbar": "^1.5.8",
+    "react-permission-role": "^2.0.0",
     "react-range": "^1.8.14",
     "react-rating": "^2.0.5",
     "react-ratings-declarative": "^3.4.1",
@@ -141,10 +142,13 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "autoprefixer": "^10.4.21",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
+    "postcss": "^8.5.6",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.10"
   },
   "overrides": {
     "@svgr/plugin-svgo": "^6.0.0",

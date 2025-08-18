@@ -26,7 +26,7 @@ const UserHeader = () => {
     localStorage.removeItem("auth0_profile");
     localStorage.removeItem("Name");
     localStorage.setItem("authenticated", false);
-    history(`${process.env.PUBLIC_URL}/login`);
+    history(`${process.env.PUBLIC_URL}/pages/authentication/login-bg-img/compact-wrapper`);
   };
 
   const UserMenuRedirect = (redirect) => {
@@ -51,7 +51,7 @@ const UserHeader = () => {
         </div>
       </div>
       <UL attrUL={{ className: "simple-list profile-dropdown onhover-show-div" }}>
-        <LI
+        {/* <LI
           attrLI={{
             onClick: () => UserMenuRedirect(`${process.env.PUBLIC_URL}/app/users/profile/${layoutURL}`),
           }}>
@@ -71,7 +71,7 @@ const UserHeader = () => {
           }}>
           <FileText />
           <span>{Taskboard}</span>
-        </LI>
+        </LI> */}
         <LI attrLI={{ onClick: Logout }}>
           <LogIn />
           <span>{LogOut}</span>
