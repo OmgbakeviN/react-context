@@ -7,7 +7,7 @@ import { Input, Label } from "reactstrap";
 import CarToon from "../../../../assets/images/dashboard/cartoon.svg";
 
 const GreetingCard = () => {
-  const agencyName = "National Directorate";
+  const agencyName = "General Directorate";
 
   return (
     <Col className="col-xxl-8 col-sm-6 box-col-6">
