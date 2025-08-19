@@ -6,6 +6,7 @@ import "./i18n";
 import { store } from "./reduxtool/store";
 import reportWebVitals from "./reportWebVitals";
 
+
 const Root = () => {
   return (
     <div className="App">

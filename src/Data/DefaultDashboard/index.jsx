@@ -82,6 +82,7 @@ export const Widgets2Data = {
   gros: 70,
   chart: Widgets2ChartData,
 };
+
 export const Widgets2Data2 = {
   title: 'Mise en service',
   color: 'success',
@@ -99,6 +100,52 @@ export const Widgets2Data2Widgets = {
   total: '6,90k',
   chart: Widgets2ChartData2Widgets,
 };
+
+// My HomePage Data
+export const MyWidgetsData = {
+  title: 'Total Projects',
+  gros: 2025,
+  total: 7000,
+  color: 'warning',
+  icon: 'return-box',
+};
+export const MyWidgetsData2 = {
+  title: 'Total Budget Allocated',
+  gros: 2025,
+  total: 2000000000,
+  color: 'primary',
+  icon: 'return-box',
+};
+export const MyWidgetsData3 = {
+  title: 'Total Funds Disbursed',
+  gros: 2025,
+  total: 2000000000,
+  color: 'warning',
+  icon: 'return-box',
+};
+
+export const Widgets2Data2a = {
+  title: 'Average Project Completion Rate',
+  total: '50%',
+  chart: Widgets2ChartData2,
+};
+
+export const Widgets2Data2b = {
+  title: 'Provisional acceptances',
+  total: '90%',
+  chart: Widgets2ChartData2,
+};
+
+export const Widgets2Data2c = {
+  title: 'Final acceptances',
+  total: '65%',
+  chart: Widgets2ChartData2,
+};
+
+
+
+
+
 
 export const LightCardData = [
   {

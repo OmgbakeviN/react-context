@@ -1574,3 +1574,7 @@ export const Bookmark = "Bookmark";
 export const AddNewBookmark = "Add New Bookmark";
 export const Back = "Back";
 export const DatatableOrderhistory = "Datatable Order history";
+
+
+// Feicom Constants //
+export const WelcomeToFeicom = "Contribuer à faire des Collectivités Territoriales Décentralisées, un endroit où il fait bon vivre.";

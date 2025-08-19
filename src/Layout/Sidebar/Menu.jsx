@@ -1,52 +1,63 @@
 export const MENUITEMS = [
-
-    {
-    menutitle: "General",
-    menucontent: "Dashboards,Widgets",
-    Items: [
-      {
-        title: "Dashboard",
-        icon: "home",
-        type: "sub",
-        badge: "badge badge-light-primary",
-        badgetxt: "1",
-        active: false,
-        children: [
-          { path: `${process.env.PUBLIC_URL}/dashboard/default`, title: "Default", type: "link" },
-        ]
-      },
-    ],
-  },
-
   {
-    menutitle: "Suivi des Projet",
-    menucontent: "Ready to use Apps",
+    menutitle: "General",
+    menucontent: "Dashboards,and Widgets",
     Items: [
       {
-        title: "Project",
+        path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1`,
+        icon: "home",
+        title: "Dashbaord",
+        type: "link",
+      },
+      {
+        title: "Projects",
         icon: "project",
         type: "sub",
-        badge: "badge badge-light-secondary",
-        badgetxt: "",
+        badge: "badge badge-light-primary",
+        badgetxt: "2",
         active: false,
         children: [
-          { path: `${process.env.PUBLIC_URL}/app/project/project-list`, type: "link", title: "Project-List" },
-          { path: `${process.env.PUBLIC_URL}/feicom/projets`,      title: "Projets",      type: "link" },
+          {
+            path: `${process.env.PUBLIC_URL}/app/project/project-list`,
+            icon: "editors",
+            title: "Project Grid",
+            type: "link",
+          },
+          {
+            path: `${process.env.PUBLIC_URL}/feicom/projets`,
+            icon: "editors",
+            title: "Project Table",
+            type: "link",
+          },
         ],
+      },
+
+      {
+        path: `${process.env.PUBLIC_URL}/app/file-manager`,
+        icon: "editors",
+        title: "Visit Reports",
+        type: "link",
+      },
+      {
+        path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/ProjectPage/SingleProject`,
+        icon: "editors",
+        title: "Project Detail",
+        type: "link",
       },
     ],
   },
 
-  {
-    menutitle: "Gestion FEICOM",
-    menucontent: "Tables FEICOM",
+    {
+    menutitle: "Administration",
+    menucontent: "Dashboards,and Widgets",
     Items: [
+      
       {
-        title: "FEICOM",
-        icon: "home",          // Choisis une icône principale pour le groupe
+        title: "CRUD Operations",
+        icon: "widget",
         type: "sub",
-        badge: "badge badge-light-success", // (optionnel)
-        badgetxt: "9",                     // (nombre de tables)
+        badge: "badge badge-light-primary",
+        badgetxt: "6",
         active: false,
         children: [
           { path: `${process.env.PUBLIC_URL}/feicom/departements`, title: "Départements", type: "link" },
@@ -57,9 +68,9 @@ export const MENUITEMS = [
           { path: `${process.env.PUBLIC_URL}/feicom/todos`,        title: "Todos",        type: "link" },
           { path: `${process.env.PUBLIC_URL}/feicom/visites`,      title: "Visites",      type: "link" },
           { path: `${process.env.PUBLIC_URL}/feicom/exercise`,     title:"Exercise",      type: "link" },
+          
         ],
       },
     ],
   },
-
 ];

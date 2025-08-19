@@ -192,6 +192,12 @@ import VisiteTable from "../Components/Dashboard/Default/visit_data_table/index"
 import ExerciseTable from "../Components/Dashboard/Default/exercise_data_table/index"
 import SocialApp from "../Components/Application/SocialApp";
 
+
+/// Importing our Feicom Custom Page
+import Page1 from "../Components/Pages/FeicomPages/HomePage";
+import SingleProject from "../Components/Pages/FeicomPages/ProjectPage";
+
+
 export const routes = [
   { path: `${process.env.PUBLIC_URL}/feicom/departements/:layout`, Component: <DepartmentTable /> },
   { path: `${process.env.PUBLIC_URL}/feicom/agences/:layout`,      Component: <AgenceTable /> },
@@ -367,4 +373,9 @@ export const routes = [
 
   // //Faq
   { path: `${process.env.PUBLIC_URL}/app/faq/:layout`, Component: <FAQContent /> },
+
+  // Feicom Custom Routes : Here are our own pages and components we have created
+  { path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/:layout`, Component: <Page1 /> },
+   { path: `${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/:layout`, Component: <SingleProject /> },
+
 ];
