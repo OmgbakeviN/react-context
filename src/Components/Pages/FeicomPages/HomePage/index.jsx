@@ -26,7 +26,6 @@ const Page1 = () => {
           <GreetingCard />
           <WidgetsWrapper />
           <RegionsCard />
-          <ProjectDetails />
           {/* <OverallBalance />
           <RecentOrders />
           <ActivityCard />
