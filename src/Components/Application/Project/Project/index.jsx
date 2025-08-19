@@ -1,4 +1,5 @@
 import React, { Fragment, useContext, useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import {
   Container, Row, Col, Card, CardBody, Nav, NavItem, NavLink, TabContent, TabPane,
   Spinner, Alert, Input, Label
@@ -16,6 +17,8 @@ import FilterBar from './FilterBar';
 const Project = () => {
   const { layoutURL } = useContext(CustomizerContext);
   const { allData }   = useContext(ProjectContext);
+
+  const navigate = useNavigate();
 
   // Onglets
   const [activeTab, setActiveTab] = useState('1');
@@ -221,6 +224,36 @@ const Project = () => {
       <Breadcrumbs parent="Project" title="Project List" mainTitle="Project List" />
       <Container fluid={true}>
         <Row className="project-card">
+          
+
+          {/* Filter bar */}
+          <Col sm="12" className="mt-2">
+            <Card>
+              <CardBody>
+                <FilterBar
+                  exerciceOptions={exerciceOptions}
+                  agenceOptions={user?.role === 'NATIONAL' ? agenceOptions : []}
+                  communeOptions={communeOptions}
+                  showAgence={user?.role === 'NATIONAL'}
+                  values={filters}
+                  onChange={handleChange}
+                  onApply={() => { /* auto-apply: no-op */ }}
+                  onReset={handleReset}
+                  loading={loadingFilters || loading}
+                />
+                <div style={{  }} className="me-2">
+                    {/* <Label className="form-label mb-0 small">Recherche</Label> */}
+                    <Input
+                      type="text"
+                      placeholder="Rechercher…"
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                    />
+                  </div>
+              </CardBody>
+            </Card>
+          </Col>
+
           <Col md="12" className="project-list">
             <Card>
               <Row className="align-items-center">
@@ -244,15 +277,7 @@ const Project = () => {
                   </Nav>
                 </Col>
                 <Col md="6" className="d-flex justify-content-end gap-2">
-                  <div style={{ maxWidth: 280 }} className="me-2">
-                    <Label className="form-label mb-0 small">Recherche</Label>
-                    <Input
-                      type="text"
-                      placeholder="Rechercher…"
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                    />
-                  </div>
+                  
                   {/* 
                   <Link
                     className="btn btn-primary"
@@ -264,25 +289,6 @@ const Project = () => {
                   */}
                 </Col>
               </Row>
-            </Card>
-          </Col>
-
-          {/* Filter bar */}
-          <Col sm="12" className="mt-2">
-            <Card>
-              <CardBody>
-                <FilterBar
-                  exerciceOptions={exerciceOptions}
-                  agenceOptions={user?.role === 'NATIONAL' ? agenceOptions : []}
-                  communeOptions={communeOptions}
-                  showAgence={user?.role === 'NATIONAL'}
-                  values={filters}
-                  onChange={handleChange}
-                  onApply={() => { /* auto-apply: no-op */ }}
-                  onReset={handleReset}
-                  loading={loadingFilters || loading}
-                />
-              </CardBody>
             </Card>
           </Col>
 
@@ -306,7 +312,7 @@ const Project = () => {
                     <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
                       {displayedData.map((item, i) => (
                         <Col key={item.id ?? i}>
-                          <CusClass item={item} />
+                          <CusClass item={item} style={{ cursor: 'pointer' }}  onClick={ () => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)}  />
                         </Col>
                       ))}
                     </Row>
@@ -333,7 +339,7 @@ const Project = () => {
                     <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
                       {listDoing.slice(0, visibleItems).map((item, i) => (
                         <Col key={item.id ?? i}>
-                          <CusClass item={item} />
+                          <CusClass item={item} style={{ cursor: 'pointer' }}  onClick={ () => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)}  />
                         </Col>
                       ))}
                     </Row>
@@ -358,7 +364,7 @@ const Project = () => {
                     <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
                       {listDone.slice(0, visibleItems).map((item, i) => (
                         <Col key={item.id ?? i}>
-                          <CusClass item={item} />
+                          <CusClass item={item} style={{ cursor: 'pointer' }}  onClick={ () => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)}  />
                         </Col>
                       ))}
                     </Row>
