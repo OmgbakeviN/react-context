@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import axiosInstance from '../../../api/axios'; // adapte le chemin si besoin
 import ProjectProfileCard from './ProjectProfile';
+import Projectpage from '../../Pages/FeicomPages/ProjectPage/index'
 
 const ProjectDetail = () => {
   const { id } = useParams();                         // /feicom/projets/:id/detail
@@ -66,8 +67,9 @@ const ProjectDetail = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
-        <ProjectProfileCard project={project} />
+        {/* <ProjectProfileCard project={project} /> */} 
       </div>
+      <Projectpage />
     </div>
   );
 };
