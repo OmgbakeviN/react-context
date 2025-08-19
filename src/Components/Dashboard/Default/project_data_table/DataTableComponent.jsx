@@ -46,7 +46,7 @@ const CommuneSelect = ({
         <Input
           type="text"
           bsSize="sm"
-          placeholder="Rechercher une commune…"
+          placeholder="Search a sub-division"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="mb-2"
@@ -61,7 +61,7 @@ const CommuneSelect = ({
             {placeholder}
           </Button>
           {filtered.length === 0 ? (
-            <div className="text-muted small px-1 py-2">Aucun résultat…</div>
+            <div className="text-muted small px-1 py-2">No results found…</div>
           ) : (
             filtered.map(opt => (
               <Button
@@ -426,7 +426,7 @@ const ProjetTable = () => {
           <Btn attrBtn={{ color: 'primary', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => handleEdit(row) }}>
             <i className="fa fa-edit" />
           </Btn>
-          <Btn attrBtn={{ color: 'info', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${row.id}/detail`) }}>
+          <Btn attrBtn={{ color: 'info', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => navigate(`${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/${row.id}/detail`) }}>
             <i className="fa fa-eye" />
           </Btn>
           <Btn attrBtn={{ color: 'danger', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => handleDeleteSingle(row) }}>
@@ -442,9 +442,8 @@ const ProjetTable = () => {
 
   return (
     <Fragment>
-      <div className="d-flex align-items-center justify-content-between mb-3">
-        <H4 attrH4={{ className: 'text-muted m-0' }}>Gestion des Projets</H4>
-        <Btn attrBtn={{ color: 'success', onClick: handleAdd }}>Ajouter</Btn>
+      <div className="d-flex justify-end m-3">
+        <Btn attrBtn={{ color: 'primary', onClick: handleAdd }}>Add Project</Btn>
       </div>
 
       {/* Filtres */}
@@ -461,6 +460,7 @@ const ProjetTable = () => {
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
+
 
         {/* Commune avec recherche */}
         <div style={{ width: 320 }}>

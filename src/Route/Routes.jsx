@@ -376,6 +376,6 @@ export const routes = [
 
   // Feicom Custom Routes : Here are our own pages and components we have created
   { path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/:layout`, Component: <Page1 /> },
-   { path: `${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/:layout`, Component: <SingleProject /> },
+  { path: `${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/:id/detail`, Component: <SingleProject /> },
 
 ];
