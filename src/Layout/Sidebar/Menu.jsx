@@ -26,7 +26,7 @@ export const MENUITEMS = [
           {
             path: `${process.env.PUBLIC_URL}/feicom/projets`,
             icon: "editors",
-            title: "Project View",
+            title: "Table View",
             type: "link",
           },
         ],
