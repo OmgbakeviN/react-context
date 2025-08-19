@@ -20,30 +20,30 @@ export const MENUITEMS = [
           {
             path: `${process.env.PUBLIC_URL}/app/project/project-list`,
             icon: "editors",
-            title: "Project Grid",
+            title: "Grid View",
             type: "link",
           },
           {
             path: `${process.env.PUBLIC_URL}/feicom/projets`,
             icon: "editors",
-            title: "Project Table",
+            title: "Project View",
             type: "link",
           },
         ],
       },
 
       {
-        path: `${process.env.PUBLIC_URL}/app/file-manager`,
+        path: `${process.env.PUBLIC_URL}/feicom/visites`,
         icon: "editors",
         title: "Visit Reports",
         type: "link",
       },
-      {
-        path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/ProjectPage/SingleProject`,
-        icon: "editors",
-        title: "Project Detail",
-        type: "link",
-      },
+      // {
+      //   path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/ProjectPage/SingleProject`,
+      //   icon: "editors",
+      //   title: "Project Detail",
+      //   type: "link",
+      // },
     ],
   },
 
@@ -66,7 +66,6 @@ export const MENUITEMS = [
           { path: `${process.env.PUBLIC_URL}/feicom/entreprises`,  title: "Entreprises",  type: "link" },
           { path: `${process.env.PUBLIC_URL}/feicom/lots`,         title: "Lots",         type: "link" },
           { path: `${process.env.PUBLIC_URL}/feicom/todos`,        title: "Todos",        type: "link" },
-          { path: `${process.env.PUBLIC_URL}/feicom/visites`,      title: "Visites",      type: "link" },
           { path: `${process.env.PUBLIC_URL}/feicom/exercise`,     title:"Exercise",      type: "link" },
           
         ],

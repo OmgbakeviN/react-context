@@ -100,6 +100,7 @@ const CusClass = ({ item }) => {
           </Col>
           <Col xs='6' style={{ padding: '5px' }} className={item.badge === 'Done' ? 'font-success' : 'font-primary'}>
             <span style={{ fontWeight: '500' }}>{item.commune}</span>
+            
           </Col>
         </Row>
         

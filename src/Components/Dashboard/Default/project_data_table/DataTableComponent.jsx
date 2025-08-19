@@ -9,7 +9,7 @@ import {
   Input, Button, Spinner, Label
 } from 'reactstrap';
 
-/* =============================== CommuneSelect (dropdown + search) =============================== */
+
 const CommuneSelect = ({
   options = [],           // [{value,label}]
   value = '',             // number | '' (toutes)
@@ -80,9 +80,8 @@ const CommuneSelect = ({
     </Dropdown>
   );
 };
-/* ================================================================================================ */
 
-/* ======================================= Formulaire Projet ====================================== */
+/*  Formulaire Projet */
 const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
   const [libelle, setLibelle] = useState(initialData.libelle || "");
   const [duree, setDuree] = useState(initialData.duree || "");
