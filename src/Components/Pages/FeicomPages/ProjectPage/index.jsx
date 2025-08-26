@@ -104,15 +104,15 @@ const SingleProject = () => {
     setModalOpen(true);
   };
 
-  // on appelle le project id avec axios nstance
-  const fetchProject = async () => {
-    try {
-      const res = await axiosInstance.get(`/feicom/api/projets/${id}/`); // on recupere le project id
-      return res.data;
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // // on appelle le project id avec axios nstance
+  // const fetchProject = async () => {
+  //   try {
+  //     const res = await axiosInstance.get(`/feicom/api/projets/${id}/`); // on recupere le project id
+  //     return res.data;
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
   // ----- Données fictives (statique) -----
   const p = {

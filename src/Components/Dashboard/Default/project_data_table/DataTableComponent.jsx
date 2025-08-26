@@ -323,6 +323,8 @@ const ProjetTable = () => {
       setLoading(false);
     }
   };
+  
+
   useEffect(() => { fetchProjets(); }, []);
 
   // filtered
@@ -416,7 +418,7 @@ const ProjetTable = () => {
     { name: 'Numéro convention', selector: r => r.numero_convention, wrap: true },
     { name: 'Date début', selector: r => r.date_debut },
     { name: 'Date fin', selector: r => r.date_fin },
-    { name: 'Entreprise', selector: r => r.entreprise },
+    { name: 'Entreprise', selector: r => r.entreprise.nom },
     { name: 'Commune', selector: r => (typeof r.commune === 'object' ? r.commune?.nom : r.commune) },
     { name: 'Exercice', selector: r => (typeof r.exercice === 'object' ? r.exercice?.annee : r.exercice) },
     {
