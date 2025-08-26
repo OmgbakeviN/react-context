@@ -1,6 +1,7 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Breadcrumbs, Btn } from "../../../../AbstractElements";
-
+import { useParams } from 'react-router-dom'; 
+import axiosInstance from "../../../../api/axios";
 import {
   Container,
   Row,
@@ -34,6 +35,62 @@ import CommonModal from "../../../UiKits/Modals/common/modal";
 import ProjectVisitForm from "./ProjectVisitForm";
 
 const SingleProject = () => {
+  
+
+  // on recupere le project id
+  const { id } = useParams();
+  const [project, setProject] = useState(null);
+  const [visites, setVisites] = useState(null);
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null);
+
+  // on charge les project detail avec useeffect
+  useEffect(() =>{
+    const fetchProject = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axiosInstance.get(`/feicom/api/projets/${id}/`); // on recupere le project id
+        setProject(response.data);
+      } catch (err) {
+        setError(err.response?.data?.detail || "Une erreur est survenue lors du chargement du projet.")
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    if (id){
+      fetchProject();
+    }
+
+  }, [id]);
+
+  console.log(project)
+
+  // on charge les visites d'un projet
+  useEffect(() =>{
+    const fetchVisites = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axiosInstance.get(`/feicom/api/visites/${id}/`); // on recupere le visit id
+        setVisites(response.data);
+        } catch (err) {
+          setError(err.response?.data?.detail || "Une erreur est survenue lors du chargement du projet.")
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+    if (id){
+      fetchVisites();
+    }
+  }, [id]);
+
+  console.log(visites)
+  
   const [active, setActive] = useState("visites"); // onglet par défaut plus “vivant”
 
   // Manege the modal
@@ -46,6 +103,16 @@ const SingleProject = () => {
     setModalContent(<div> Test</div>);
     setModalOpen(true);
   };
+
+  // // on appelle le project id avec axios nstance
+  // const fetchProject = async () => {
+  //   try {
+  //     const res = await axiosInstance.get(`/feicom/api/projets/${id}/`); // on recupere le project id
+  //     return res.data;
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
 
   // ----- Données fictives (statique) -----
   const p = {

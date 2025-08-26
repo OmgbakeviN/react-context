@@ -49,7 +49,7 @@ const CusClass = ({ item }) => {
                 Type: {item.type}
               </span>
               <span style={{ backgroundColor: '#E3F2FD', padding: '3px 8px', borderRadius: '4px', color: '#1565C0' }}>
-                Annee D'exercice: {item.exercice}
+                Annee D'exercice: {item.exercice.annee}
               </span>
             </P>
           </div>
@@ -92,14 +92,14 @@ const CusClass = ({ item }) => {
             <span style={{ color: '#757575', fontSize: '13px' }}>Entreprise: </span>
           </Col>
           <Col xs='6' style={{ padding: '5px' }} className={item.badge === 'Done' ? 'font-success' : 'font-primary'}>
-            <span style={{ fontWeight: '500' }}>{item.entreprise}</span>
+            <span style={{ fontWeight: '500' }}>{item.entreprise.nom}</span>
           </Col>
           
           <Col xs='6' style={{ padding: '5px' }}>
             <span style={{ color: '#757575', fontSize: '13px' }}>Commune: </span>
           </Col>
           <Col xs='6' style={{ padding: '5px' }} className={item.badge === 'Done' ? 'font-success' : 'font-primary'}>
-            <span style={{ fontWeight: '500' }}>{item.commune}</span>
+            <span style={{ fontWeight: '500' }}>{item.commune.nom}</span>
             
           </Col>
         </Row>
@@ -123,19 +123,19 @@ const CusClass = ({ item }) => {
         
         <div className='project-status mt-4'>
           <div className='media mb-0' style={{ marginBottom: '5px' }}>
-            <P style={{ color: '#616161', fontSize: '14px' }}>Completion: {item.commune}% </P>
+            <P style={{ color: '#616161', fontSize: '14px' }}>Completion: {item.exercice.progress}% </P>
             {/* <div className='media-body text-end'>
               <span>{Done}</span>
             </div> */}
           </div>
-          {item.commune === '100' ? 
-            <Progress className='sm-progress-bar' color='success' value={item.commune} style={{ 
+          {item.exercice.progress === '100' ? 
+            <Progress className='sm-progress-bar' color='success' value={item.exercice.progress} style={{ 
               height: '8px',
               borderRadius: '4px',
               backgroundColor: '#E0E0E0'
             }} /> 
             : 
-            <Progress className='sm-progress-bar' striped color='primary' value={item.commune} style={{ 
+            <Progress className='sm-progress-bar' striped color='primary' value={item.exercice.progress} style={{ 
               height: '8px',
               borderRadius: '4px',
               backgroundColor: '#E0E0E0'
