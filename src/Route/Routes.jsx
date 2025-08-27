@@ -196,6 +196,7 @@ import SocialApp from "../Components/Application/SocialApp";
 /// Importing our Feicom Custom Page
 import Page1 from "../Components/Pages/FeicomPages/HomePage";
 import SingleProject from "../Components/Pages/FeicomPages/ProjectPage";
+import Rapport from "../Components/Pages/FeicomPages/Rapport";
 
 
 export const routes = [
@@ -377,5 +378,6 @@ export const routes = [
   // Feicom Custom Routes : Here are our own pages and components we have created
   { path: `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/:layout`, Component: <Page1 /> },
   { path: `${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/:id/detail`, Component: <SingleProject /> },
+  { path: `${process.env.PUBLIC_URL}/pages/FeicomPages/Rapport/:projectid/:visitid/detail`, Component: <Rapport /> },
 
 ];
