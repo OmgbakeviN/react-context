@@ -115,6 +115,24 @@ export default function ProjectVisitForm({ onSubmit }) {
     recoMaitreOuvrage_docsAdministratifs: true,
   });
 
+  //on recupere les donnes des nputs dans un json
+  const [formData, setFormData] = useState({
+    "id":  null,
+    "projet": null,
+    "date": null,
+    "old_record": null,
+    "new_record": null,
+    "observation": null,
+    "images": null,
+    "enterprise_present": false,
+    "moe_present": false,
+    "work_status_note": null,
+    "followup_status_note": null,
+    "staff_summary": null,
+    "materials_summary": null,
+    "recommendations": null
+  });
+
   const steps = useMemo(
     () => [
       { key: "admin", title: "Visit Details" },
@@ -277,7 +295,7 @@ export default function ProjectVisitForm({ onSubmit }) {
                     <Input
                       type="date"
                       name="dateVisite"
-                      value={form.dateVisite}
+                      value={formData.date}
                       onChange={update}
                     />
                   </FormGroup>

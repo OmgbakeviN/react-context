@@ -220,8 +220,7 @@ const VisiteTable = () => {
     { name: "Ancien relevé", selector: row => row.old_record },
     { name: "Nouveau relevé", selector: row => row.new_record },
     { name: "Observation", selector: row => row.observation },
-    { name: "Image", selector: row => row.image },
-    { name: "Projet", selector: row => row.projet }, // (affiche l'id du projet, tu peux mapper le nom si tu veux)
+    { name: "Projet", selector: row => row.projet.libelle }, // (affiche l'id du projet, tu peux mapper le nom si tu veux)
     {
       name: 'Actions',
       cell: row => (

@@ -8,6 +8,9 @@ import {
   Col,
   Card,
   CardHeader,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
   CardBody,
   Badge,
   Nav,
@@ -33,9 +36,28 @@ import HeaderCard from "../../../Common/Component/HeaderCard";
 import DataTableComponent from "../../../Tables/DataTable/DataTableComponent";
 import CommonModal from "../../../UiKits/Modals/common/modal";
 import ProjectVisitForm from "./ProjectVisitForm";
+import DataTable from 'react-data-table-component';
+import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+import Rapport from '../Rapport';
+
+//on vas importer un modal de reactstrap
+import { Modal, ModalHeader, ModalBody } from "react-bootstrap";
+
+dayjs.locale('fr');
+dayjs.extend(localizedFormat);
 
 const SingleProject = () => {
   
+  //on definit usenavigate
+  const navigate = useNavigate();
+
+  // on gere letat du modal
+  const [modalVisite, setModalVisite] = useState(false);
+  const [selectedVisite, setSelectedVisite] = useState(null);
+
 
   // on recupere le project id
   const { id } = useParams();
@@ -44,52 +66,60 @@ const SingleProject = () => {
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(null);
 
+  //on definit le modal
+  const [modal, setModal] = useState(false);
+
+  //etat des donnees de la ligne selectionee 
+  const [selectedRow, setSelectedRow] = useState(null);
+
   // on charge les project detail avec useeffect
   useEffect(() =>{
+    let cancelled = false;
+
     const fetchProject = async () => {
       setLoading(true);
       setError(null);
-
       try {
-        const response = await axiosInstance.get(`/feicom/api/projets/${id}/`); // on recupere le project id
-        setProject(response.data);
+        const response = await axiosInstance.get(`/feicom/api/projets/${id}/`);
+        if (!cancelled) setProject(response.data);
       } catch (err) {
-        setError(err.response?.data?.detail || "Une erreur est survenue lors du chargement du projet.")
+        if (!cancelled) {
+          setError(err?.response?.data?.detail || "Une erreur est survenue lors du chargement du projet.");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-  
-    if (id){
-      fetchProject();
-    }
 
+    if (id) fetchProject();
+    return () => { cancelled = true; };
   }, [id]);
+
 
   console.log(project)
 
-  // on charge les visites d'un projet
-  useEffect(() =>{
-    const fetchVisites = async () => {
-      setLoading(true);
-      setError(null);
+  // // on charge les visites d'un projet
+  // useEffect(() =>{
+  //   const fetchVisites = async () => {
+  //     setLoading(true);
+  //     setError(null);
 
-      try {
-        const response = await axiosInstance.get(`/feicom/api/visites/${id}/`); // on recupere le visit id
-        setVisites(response.data);
-        } catch (err) {
-          setError(err.response?.data?.detail || "Une erreur est survenue lors du chargement du projet.")
-        } finally {
-          setLoading(false);
-        }
-      };
+  //     try {
+  //       const response = await axiosInstance.get(`/feicom/api/visites/${id}/`); // on recupere le visit id
+  //       setVisites(response.data);
+  //       } catch (err) {
+  //         setError(err.response?.data?.detail || "Une erreur est survenue lors du chargement du projet.")
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     };
   
-    if (id){
-      fetchVisites();
-    }
-  }, [id]);
+  //   if (id){
+  //     fetchVisites();
+  //   }
+  // }, [id]);
 
-  console.log(visites)
+  // console.log(visites)
   
   const [active, setActive] = useState("visites"); // onglet par défaut plus “vivant”
 
@@ -104,6 +134,65 @@ const SingleProject = () => {
     setModalOpen(true);
   };
 
+  // on definit les colones de notre datatable
+  const columns = [
+    {
+      name: "Date",
+      selector: (row) => row.date,
+      sortable: true,
+      cell: (row) => dayjs(row.date).format('dddd, DD MMMM YYYY'),
+    },
+    { // entreprise_present is boolean it is either true or false
+      name: "entreprise present",
+      selector: (row) => row.enterprise_present,
+      sortable: true,
+      cell: row => {
+        // conditional rendering base on bollean value
+        return row.enterprise_present ? (
+          <Badge color="success">Present</Badge>
+        ) : (
+          <Badge color="danger">Absent</Badge>
+        )
+      }
+    }, 
+    { // moe_present is boolean it is either true or false
+      name: "Moe_present",
+      selector: (row) => row.moe_present,
+      sortable: true,
+      cell: row => {
+        // conditional rendering base on bollean value
+        return row.moe_present ? (
+          <Badge color="success">Present</Badge>
+        ) : (
+          <Badge color="danger">Absent</Badge>
+        )
+      }
+    },
+    {
+      name: 'Actions',
+      cell: row => (
+        <div className="d-flex gap-1">
+          <Btn
+          attrBtn={{
+            color: 'info',
+            size: 'sm',
+            className: 'btn-sm py-1 px-2',
+            onClick: () => {
+              setSelectedVisite(row);
+              setModalVisite(true);
+            }
+          }}
+          >
+            <i className="fa fa-eye" />
+          </Btn>
+        </div>
+      ),
+      width: '150px',
+      ignoreRowClick: true,
+      button: true,
+    },  
+  ];
+
   // // on appelle le project id avec axios nstance
   // const fetchProject = async () => {
   //   try {
@@ -117,7 +206,7 @@ const SingleProject = () => {
   // ----- Données fictives (statique) -----
   const p = {
     id: 1,
-    titre: "Construction d'une école primaire",
+    titre: "project.libelle",
     region: "Centre",
     departement: "Mfoundi",
     commune: "Yaoundé I",
@@ -195,6 +284,10 @@ const SingleProject = () => {
   const money = (n) =>
     (n ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " FCFA";
 
+  if(!project) {
+    return <p>Chargement ...</p>
+  }
+
   return (
     <Fragment>
       <Breadcrumbs mainTitle="FEICOM" parent="FEICOM" title="Project id" />
@@ -208,14 +301,14 @@ const SingleProject = () => {
                   <CardBody className="py-4">
                     <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
                       <div>
-                        <h2 className="mb-1">{p.titre}</h2>
+                        <h2 className="mb-1">{project.libelle}</h2>
                         <div className="text-muted">
-                          {p.region} • {p.departement} • {p.commune}
+                          {p.region} • {project.commune.departement} • {project.commune.nom}
                         </div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
                         <Badge color="primary" pill className="px-3 py-2">
-                          {p.statut}
+                          {project.status}
                         </Badge>
                         <Button
                           color="secondary"
@@ -236,7 +329,7 @@ const SingleProject = () => {
                         >
                           <CardBody>
                             <div className="fw-bold mb-1">Montant TTC</div>
-                            <div className="fs-4">{money(p.montant_ttc)}</div>
+                            <div className="fs-4">{money(project.montant_ht)}</div>
                           </CardBody>
                         </Card>
                       </Col>
@@ -268,9 +361,9 @@ const SingleProject = () => {
                             <Progress
                               color="warning"
                               style={{ height: 14 }}
-                              value={p.delais_consommes}
+                              value={project.pourcentage_consomme}
                             >
-                              {p.delais_consommes}%
+                              {project.pourcentage_consomme}%
                             </Progress>
                           </CardBody>
                         </Card>
@@ -607,7 +700,7 @@ const SingleProject = () => {
                                 <div className="fw-bold mb-2">
                                   Visit history
                                 </div>
-                                <Table
+                                {/* <Table
                                   responsive
                                   hover
                                   className="align-middle"
@@ -622,7 +715,7 @@ const SingleProject = () => {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {p.visites.map((v, i) => (
+                                    {project.visites.map((v, i) => (
                                       <tr key={i}>
                                         <td>{v.date}</td>
                                         <td>
@@ -644,7 +737,28 @@ const SingleProject = () => {
                                       </tr>
                                     ))}
                                   </tbody>
-                                </Table>
+                                </Table> */}
+
+                                {/* on affiche les visites avec react data table */}
+                                <DataTable
+                                  columns={columns}
+                                  data={project.visites}
+                                  striped
+                                  center
+                                  pagination
+                                  progressPending={loading}
+                                  noDataComponent="NAN"
+                                /> 
+
+                                {/* on ajoute le composant modal */}
+                                <CommonModal
+                                  isOpen={modalOpen}
+                                  toggle={() => setModalOpen(!modalOpen)}
+                                  title="Détails de la visite"
+                                  size="lg"
+                                >
+                                  < Rapport />
+                                </CommonModal>
                               </CardBody>
                             </Card>
                             {/* <Container fluid={true}>
