@@ -54,23 +54,12 @@ const SingleProject = () => {
   //on definit usenavigate
   const navigate = useNavigate();
 
-  // on gere letat du modal
-  const [modalVisite, setModalVisite] = useState(false);
-  const [selectedVisite, setSelectedVisite] = useState(null);
-
-
   // on recupere le project id
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [visites, setVisites] = useState(null);
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(null);
-
-  //on definit le modal
-  const [modal, setModal] = useState(false);
-
-  //etat des donnees de la ligne selectionee 
-  const [selectedRow, setSelectedRow] = useState(null);
 
   // on charge les project detail avec useeffect
   useEffect(() =>{
@@ -127,11 +116,18 @@ const SingleProject = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState(null);
+  const [modal2Open, setModal2Open] = useState(false);
 
   const handleAddModal = () => {
     setModalTitle(<div className="fw-semibold text-wrap"> Fiche de Visite – PCCM / FEICOM    </div>);
     setModalContent(<div> Test</div>);
     setModalOpen(true);
+  };
+
+  const handlevisitesModal = () => {
+    setModalTitle(<div className="fw-semibold text-wrap"> Visite – PCCM / FEICOM    </div>);
+    setModalContent(<div> Test</div>);
+    setModal2Open(true);
   };
 
   // on definit les colones de notre datatable
@@ -178,8 +174,7 @@ const SingleProject = () => {
             size: 'sm',
             className: 'btn-sm py-1 px-2',
             onClick: () => {
-              setSelectedVisite(row);
-              setModalVisite(true);
+              handlevisitesModal();
             }
           }}
           >
@@ -749,16 +744,7 @@ const SingleProject = () => {
                                   progressPending={loading}
                                   noDataComponent="NAN"
                                 /> 
-
-                                {/* on ajoute le composant modal */}
-                                <CommonModal
-                                  isOpen={modalOpen}
-                                  toggle={() => setModalOpen(!modalOpen)}
-                                  title="Détails de la visite"
-                                  size="lg"
-                                >
-                                  < Rapport />
-                                </CommonModal>
+                                
                               </CardBody>
                             </Card>
                             {/* <Container fluid={true}>
@@ -909,6 +895,9 @@ const SingleProject = () => {
 
       <CommonModal isOpen={modalOpen} title={modalTitle} toggler={() => setModalOpen(false)} size="lg">
         <ProjectVisitForm onSubmit={(data) => console.log(data)} />
+      </CommonModal>
+      <CommonModal isOpen={modal2Open} title={modalTitle} toggler={() => setModal2Open(false)} size="lg">
+        <Rapport />
       </CommonModal>
     </Fragment>
   );
