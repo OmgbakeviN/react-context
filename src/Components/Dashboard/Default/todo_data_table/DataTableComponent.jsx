@@ -207,9 +207,17 @@ const TodoTable = () => {
   const tableColumns = [
     { name: '#', selector: (row, index) => index + 1, width: '50px', center: true },
     { name: "Nom", selector: row => row.nom, sortable: true },
-    { name: "Pourcentage", selector: row => row.pourcentage },
-    { name: "Statut", selector: row => row.statut },
-    { name: "Lot", selector: row => row.lot }, // affiche l'id du lot (tu peux mapper le nom si besoin)
+    { name: "Statut", selector: row => row.statut ,
+      // on affiche la couleur de la cellule seulon le statut STARTED, NOT STARTED, COMPLETED
+      cell: row => (
+        <span className={`badge badge-${row.statut === 'STARTED' ? 'success' : row.statut === 'NOT STARTED' ? 'warning' : row.statut === 'COMPLETED' ? 'info' : 'secondary'}`}>          
+          {row.statut}
+        </span>
+      ),
+      sortable: true,
+
+    },
+    { name: "Lot", selector: row => row.lot, sortable: true }, // affiche l'id du lot (tu peux mapper le nom si besoin)
     {
       name: 'Actions',
       cell: row => (

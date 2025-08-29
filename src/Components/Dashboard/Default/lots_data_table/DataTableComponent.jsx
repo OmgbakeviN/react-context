@@ -209,8 +209,14 @@ const LotTable = () => {
   const tableColumns = [
     { name: '#', selector: (row, index) => index + 1, width: '50px', center: true },
     { name: "Nom", selector: row => row.nom, sortable: true },
-    { name: "Pourcentage", selector: row => row.pourcentage },
-    { name: "Statut", selector: row => row.statut },
+    { name: "Statut", selector: row => row.statut, 
+      // on affiche la couleur de la cellule seulon le statut STARTED, NOT STARTED, COMPLETED
+      cell: row => (
+        <span className={`badge badge-${row.statut === 'STARTED' ? 'success' : row.statut === 'NOT STARTED' ? 'warning' : row.statut === 'COMPLETED' ? 'info' : 'secondary'}`}>          
+          {row.statut}
+        </span>
+      )
+     },
     { name: "Projet", selector: row => row.projet }, // affiche l'id; si tu veux le nom, demande-le moi
     {
       name: 'Actions',
