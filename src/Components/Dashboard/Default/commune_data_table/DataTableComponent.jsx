@@ -209,8 +209,13 @@ const CommuneTable = () => {
       sortable: true,
     },
     {
-      name: "Département",
-      selector: row => row.departement,
+      name: "Departement",
+      selector: row => row.departement.nom,
+      sortable: true,
+    },
+    {
+      name: "Region",
+      selector: row => row.departement.agence.nom,
       sortable: true,
     },
     {
@@ -261,7 +266,6 @@ const CommuneTable = () => {
       <DataTable
         data={filteredData}
         columns={tableColumns}
-        striped
         center
         pagination
         selectableRows

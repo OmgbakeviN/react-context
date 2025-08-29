@@ -179,8 +179,40 @@ const ExerciceTable = () => {
     { name: '#', selector: (row, index) => index + 1, width: '50px', center: true },
     { name: "Budget", selector: row => row.budget, sortable: true },
     { name: "Année", selector: row => row.annee, sortable: true },
-    { name: "Taux consommé", selector: row => row.taux_consomme },
-    { name: "Pourcentage consommé", selector: row => row.pourcentage_consomme },
+    { name: "Taux consommé", selector: row => row.taux_consomme, sortable:true,
+      // ajouter une barre de pourcentage
+      cell: row => (
+        <div className='progress' style={{ height: '20px', minWidth: '100px' }}>
+          <div 
+            className='progress-bar' 
+            role='progressbar' 
+            style={{ width: row.taux_consomme + '%' }} 
+            aria-valuenow={row.taux_consomme} 
+            aria-valuemin="0" 
+            aria-valuemax="100"
+          >
+            {row.taux_consomme + '%'}
+          </div>
+        </div>
+      )
+     },
+    { name: "Pourcentage consommé", selector: row => row.pourcentage_consomme, sortable:true,
+      // ajouter une barre de pourcentage
+      cell: row => (
+        <div className='progress' style={{ height: '20px', minWidth: '100px' }}>
+          <div 
+            className='progress-bar bg-success' 
+            role='progressbar' 
+            style={{ width: row.pourcentage_consomme + '%' }} 
+            aria-valuenow={row.pourcentage_consomme} 
+            aria-valuemin="0" 
+            aria-valuemax="100"
+          >
+            {row.pourcentage_consomme + '%'}
+          </div>
+        </div>
+      )
+     },
     {
       name: 'Actions',
       cell: row => (

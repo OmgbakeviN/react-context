@@ -140,7 +140,7 @@ const handleDelete = () => {
     },
     {
       name: 'Agence',
-      selector: row => row.agence,
+      selector: row => row.agence.nom,
       sortable: true,
     },
     {

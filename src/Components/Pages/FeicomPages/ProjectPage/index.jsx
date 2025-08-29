@@ -130,6 +130,9 @@ const SingleProject = () => {
     setModal2Open(true);
   };
 
+  //lets keep the informations of the visit column
+  const [visit, setVisit] = useState(null);
+
   // on definit les colones de notre datatable
   const columns = [
     {
@@ -175,6 +178,7 @@ const SingleProject = () => {
             className: 'btn-sm py-1 px-2',
             onClick: () => {
               handlevisitesModal();
+              setVisit(row);
             }
           }}
           >
@@ -897,7 +901,8 @@ const SingleProject = () => {
         <ProjectVisitForm onSubmit={(data) => console.log(data)} />
       </CommonModal>
       <CommonModal isOpen={modal2Open} title={modalTitle} toggler={() => setModal2Open(false)} size="lg">
-        <Rapport />
+        {/* on passe project et aussi la visite en props */}
+        <Rapport project={project} visit={visit} />
       </CommonModal>
     </Fragment>
   );
