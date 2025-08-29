@@ -1,8 +1,13 @@
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { Btn, H4 } from '../../../../AbstractElements';
-import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
+import axiosInstance from '../../../../api/axios';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchTodos, createTodo, updateTodo, deleteTodo, deleteManyTodos,
+  selectTodos, selectTodosLoading, selectTodosError
+} from '../../../../reduxtool/todosSlice';
 
 // --- Formulaire todo ---
 const TodoForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -10,30 +15,33 @@ const TodoForm = ({ initialData = {}, onSave, onCancel }) => {
   const [pourcentage, setPourcentage] = useState(initialData.pourcentage || "");
   const [statut, setStatut] = useState(initialData.statut || "");
   const [lot, setLot] = useState(
-    typeof initialData.lot === "object"
-      ? initialData.lot.id
-      : initialData.lot || ""
+    typeof initialData.lot === "object" ? initialData.lot.id : (initialData.lot || "")
   );
+
   const [lotOptions, setLotOptions] = useState([]);
   const [loadingLots, setLoadingLots] = useState(false);
 
-  // Charger les lots pour le select
+  // Charger les lots (simple fetch local; tu peux aussi brancher sur lotsSlice si tu veux mutualiser)
   useEffect(() => {
-    setLoadingLots(true);
-    axiosInstance.get('/feicom/api/lots/')
-      .then(res => {
-        const options = res.data.map(item => ({
+    (async () => {
+      setLoadingLots(true);
+      try {
+        const res = await axiosInstance.get('/feicom/api/lots/');
+        const list = Array.isArray(res.data) ? res.data : (res.data?.results ?? []);
+        const options = list.map(item => ({
           value: item.id,
-          label: `${item.id} - ${item.nom}`
+          label: `${item.id} - ${item.nom}`,
         }));
         setLotOptions(options);
-      })
-      .finally(() => setLoadingLots(false));
+      } finally {
+        setLoadingLots(false);
+      }
+    })();
   }, []);
 
-  const handleSubmit = e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ nom, pourcentage, statut, lot });
+    onSave({ nom, pourcentage, statut, lot: lot ? Number(lot) : "" });
   };
 
   return (
@@ -48,7 +56,12 @@ const TodoForm = ({ initialData = {}, onSave, onCancel }) => {
       </div>
       <div className="mb-2">
         <label>Statut</label>
-        <input className="form-control" value={statut} onChange={e => setStatut(e.target.value)} required />
+        <select className="form-control" value={statut} onChange={e => setStatut(e.target.value)} required>
+          <option value="">Sélectionnez…</option>
+          <option value="NOT STARTED">NOT STARTED</option>
+          <option value="STARTED">STARTED</option>
+          <option value="COMPLETED">COMPLETED</option>
+        </select>
       </div>
       <div className="mb-2">
         <label>Lot</label>
@@ -73,11 +86,10 @@ const TodoForm = ({ initialData = {}, onSave, onCancel }) => {
   );
 };
 
-// --- Modale de suppression multiple/simple ---
 const DeleteConfirm = ({ noms, onConfirm, onCancel }) => (
   <div>
     <p>
-      Voulez-vous vraiment supprimer {noms.length > 1 ? "les todos suivants" : "ce todo"} ?<br />
+      Voulez-vous vraiment supprimer {noms.length > 1 ? "les todos suivants" : "ce todo"} ?<br />
       <strong>{noms.join(', ')}</strong>
     </p>
     <div className="d-flex gap-2">
@@ -88,60 +100,44 @@ const DeleteConfirm = ({ noms, onConfirm, onCancel }) => (
 );
 
 const TodoTable = () => {
-  const [data, setData] = useState([]);
+  const dispatch = useDispatch();
+
+  // Redux state
+  const items = useSelector(selectTodos);
+  const loading = useSelector(selectTodosLoading);
+  const error = useSelector(selectTodosError);
+
+  // UI state
   const [selectedRows, setSelectedRows] = useState([]);
   const [toggleDelet, setToggleDelet] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState('');
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState(null);
 
-  const [error, setError] = useState(null);
-  const [searchText, setSearchText] = useState('');
-
-  // -- API fetch --
-  const fetchTodos = async () => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.get('/feicom/api/todos/');
-      setData(response.data);
-      setError(null);
-    } catch (err) {
-      setError("Erreur lors de la récupération des todos : " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // filtering search
-  const filteredData = data.filter(row => 
-    Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
-  );
-
+  // Fetch init
   useEffect(() => {
-    fetchTodos();
-  }, []);
+    dispatch(fetchTodos());
+  }, [dispatch]);
 
-  // Suppression multiple
-  const handleDelete = () => {
-    setModalTitle('Suppression de plusieurs todos');
+  // Recherche locale
+  const filteredData = useMemo(() => {
+    const q = searchText?.trim().toLowerCase();
+    if (!q) return items || [];
+    return (items || []).filter(row =>
+      Object.values(row || {}).join(' ').toLowerCase().includes(q)
+    );
+  }, [items, searchText]);
+
+  // CRUD handlers
+  const handleAdd = () => {
+    setModalTitle('Ajouter un todo');
     setModalContent(
-      <DeleteConfirm
-        noms={selectedRows.map(r => r.nom)}
-        onConfirm={async () => {
-          try {
-            await Promise.all(
-              selectedRows.map(row =>
-                axiosInstance.delete(`/feicom/api/todos/${row.id}/`)
-              )
-            );
-            setToggleDelet(!toggleDelet);
-            setModalOpen(false); 
-            fetchTodos();
-          } catch (err) {
-            setError("Erreur lors de la suppression : " + err.message);
-          }
+      <TodoForm
+        onSave={async (form) => {
+          await dispatch(createTodo(form)).unwrap();
+          setModalOpen(false);
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -149,16 +145,29 @@ const TodoTable = () => {
     setModalOpen(true);
   };
 
-  // Suppression simple
-  const handleDeleteSingle = row => {
+  const handleEdit = (row) => {
+    setModalTitle('Modifier le todo');
+    setModalContent(
+      <TodoForm
+        initialData={row}
+        onSave={async (form) => {
+          await dispatch(updateTodo({ id: row.id, data: form })).unwrap();
+          setModalOpen(false);
+        }}
+        onCancel={() => setModalOpen(false)}
+      />
+    );
+    setModalOpen(true);
+  };
+
+  const handleDeleteSingle = (row) => {
     setModalTitle('Suppression du todo');
     setModalContent(
       <DeleteConfirm
         noms={[row.nom]}
         onConfirm={async () => {
-          await axiosInstance.delete(`/feicom/api/todos/${row.id}/`);
+          await dispatch(deleteTodo(row.id)).unwrap();
           setModalOpen(false);
-          fetchTodos();
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -166,15 +175,15 @@ const TodoTable = () => {
     setModalOpen(true);
   };
 
-  // Ajout
-  const handleAdd = () => {
-    setModalTitle('Ajouter un todo');
+  const handleDeleteMany = () => {
+    setModalTitle('Suppression de plusieurs todos');
     setModalContent(
-      <TodoForm
-        onSave={async (data) => {
-          await axiosInstance.post('/feicom/api/todos/', data);
+      <DeleteConfirm
+        noms={selectedRows.map(r => r.nom)}
+        onConfirm={async () => {
+          await dispatch(deleteManyTodos(selectedRows.map(r => r.id))).unwrap();
+          setToggleDelet(v => !v);
           setModalOpen(false);
-          fetchTodos();
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -182,65 +191,57 @@ const TodoTable = () => {
     setModalOpen(true);
   };
 
-  // Modification
-  const handleEdit = row => {
-    setModalTitle('Modifier le todo');
-    setModalContent(
-      <TodoForm
-        initialData={row}
-        onSave={async (data) => {
-          await axiosInstance.put(`/feicom/api/todos/${row.id}/`, data);
-          setModalOpen(false);
-          fetchTodos();
-        }}
-        onCancel={() => setModalOpen(false)}
-      />
-    );
-    setModalOpen(true);
-  };
-
-  const handleRowSelected = useCallback(state => {
+  const handleRowSelected = useCallback((state) => {
     setSelectedRows(state.selectedRows);
   }, []);
 
-  // Colonnes du tableau
+  // Helpers UI
+  const statusBadgeClass = (s) => {
+    if (s === 'STARTED') return 'success';
+    if (s === 'NOT STARTED') return 'warning';
+    if (s === 'COMPLETED') return 'info';
+    return 'secondary';
+  };
+
+  // Colonnes
   const tableColumns = [
     { name: '#', selector: (row, index) => index + 1, width: '50px', center: true },
-    { name: "Nom", selector: row => row.nom, sortable: true },
-    { name: "Statut", selector: row => row.statut ,
-      // on affiche la couleur de la cellule seulon le statut STARTED, NOT STARTED, COMPLETED
+    { name: 'Nom', selector: row => row.nom, sortable: true },
+    {
+      name: 'Statut',
+      selector: row => row.statut,
+      sortable: true,
       cell: row => (
-        <span className={`badge badge-${row.statut === 'STARTED' ? 'success' : row.statut === 'NOT STARTED' ? 'warning' : row.statut === 'COMPLETED' ? 'info' : 'secondary'}`}>          
+        <span className={`badge badge-${statusBadgeClass(row.statut)}`}>
           {row.statut}
         </span>
       ),
-      sortable: true,
-
     },
-    { name: "Lot", selector: row => row.lot, sortable: true }, // affiche l'id du lot (tu peux mapper le nom si besoin)
+    {
+      name: 'Pourcentage',
+      selector: row => row.pourcentage,
+      sortable: true,
+      cell: row => `${row.pourcentage ?? 0}%`,
+    },
+    {
+      name: 'Lot',
+      selector: row => (typeof row.lot === 'object' ? (row.lot.nom ?? row.lot.id) : row.lot),
+      sortable: true,
+      wrap: true,
+    },
     {
       name: 'Actions',
+      width: '140px',
       cell: row => (
         <div className='d-flex gap-1'>
-          <Btn attrBtn={{ 
-            color: 'primary', 
-            size: 'sm', 
-            className: 'btn-sm py-1 px-2', 
-            onClick: () => handleEdit(row) 
-          }}>
+          <Btn attrBtn={{ color: 'primary', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => handleEdit(row) }}>
             <i className="fa fa-edit"></i>
           </Btn>
-          <Btn attrBtn={{ 
-            color: 'danger', 
-            size: 'sm', 
-            className: 'btn-sm py-1 px-2', 
-            onClick: () => handleDeleteSingle(row) 
-          }}>
+          <Btn attrBtn={{ color: 'danger', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => handleDeleteSingle(row) }}>
             <i className="fa fa-trash"></i>
           </Btn>
         </div>
       ),
-      width: '120px',
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
@@ -253,14 +254,24 @@ const TodoTable = () => {
         <H4 attrH4={{ className: 'text-muted m-0' }}>Gestion des Todos</H4>
         <Btn attrBtn={{ color: 'success', onClick: handleAdd }}>Ajouter</Btn>
       </div>
-      <input type="text" className="form-control mb-2" placeholder="Recherche" onChange={e => setSearchText(e.target.value)} />
+
+      <input
+        type="text"
+        className="form-control mb-2"
+        placeholder="Recherche"
+        value={searchText}
+        onChange={e => setSearchText(e.target.value)}
+      />
+
       {error && <div className='alert alert-danger'>{error}</div>}
+
       {selectedRows.length > 0 && (
         <div className='d-flex align-items-center justify-content-between bg-light-info p-2 mb-2'>
-          <H4 attrH4={{ className: 'text-muted m-0' }}>Supprimer la sélection</H4>
-          <Btn attrBtn={{ color: 'danger', onClick: handleDelete }}>Supprimer</Btn>
+          <H4 attrH4={{ className: 'text-muted m-0' }}>Supprimer la sélection ({selectedRows.length})</H4>
+          <Btn attrBtn={{ color: 'danger', onClick: handleDeleteMany }}>Supprimer</Btn>
         </div>
       )}
+
       <DataTable
         data={filteredData}
         columns={tableColumns}
@@ -273,6 +284,7 @@ const TodoTable = () => {
         progressPending={loading}
         noDataComponent="Aucune donnée"
       />
+
       <CommonModal isOpen={modalOpen} title={modalTitle} toggler={() => setModalOpen(false)}>
         {modalContent}
       </CommonModal>
