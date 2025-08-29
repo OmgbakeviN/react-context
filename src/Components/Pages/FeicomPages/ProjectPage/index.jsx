@@ -302,7 +302,7 @@ const SingleProject = () => {
                       <div>
                         <h2 className="mb-1">{project.libelle}</h2>
                         <div className="text-muted">
-                          {p.region} • {project.commune.departement} • {project.commune.nom}
+                          {project.commune.departement.agence.nom} • {project.commune.departement.nom} • {project.commune.nom}
                         </div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
