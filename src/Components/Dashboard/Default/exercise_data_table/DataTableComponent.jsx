@@ -1,26 +1,42 @@
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { Btn, H4 } from '../../../../AbstractElements';
-import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
+import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  fetchExercices,
+  createExercice,
+  updateExercice,
+  deleteExercice,
+  deleteManyExercices,
+  selectExercices,
+  selectExercicesLoading,
+  selectExercicesError,
+} from '../../../../reduxtool/exercicesSlice';
 
 // --- Formulaire exercice ---
 const ExerciceForm = ({ initialData = {}, onSave, onCancel }) => {
-  const [budget, setBudget] = useState(initialData.budget || "");
-  const [annee, setAnnee] = useState(initialData.annee || "");
-  const [taux_consomme, setTauxConsomme] = useState(initialData.taux_consomme || "");
-  const [pourcentage_consomme, setPourcentageConsomme] = useState(initialData.pourcentage_consomme || "");
+  const [budget, setBudget] = useState(initialData.budget ?? '');
+  const [annee, setAnnee] = useState(initialData.annee ?? '');
+  const [taux_consomme, setTauxConsomme] = useState(initialData.taux_consomme ?? '');
+  const [pourcentage_consomme, setPourcentageConsomme] = useState(initialData.pourcentage_consomme ?? '');
 
   useEffect(() => {
-    setBudget(initialData.budget || "");
-    setAnnee(initialData.annee || "");
-    setTauxConsomme(initialData.taux_consomme || "");
-    setPourcentageConsomme(initialData.pourcentage_consomme || "");
+    setBudget(initialData.budget ?? '');
+    setAnnee(initialData.annee ?? '');
+    setTauxConsomme(initialData.taux_consomme ?? '');
+    setPourcentageConsomme(initialData.pourcentage_consomme ?? '');
   }, [initialData.id]);
 
-  const handleSubmit = e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ budget, annee, taux_consomme, pourcentage_consomme });
+    onSave({
+      budget,
+      annee,
+      taux_consomme,
+      pourcentage_consomme,
+    });
   };
 
   return (
@@ -34,11 +50,11 @@ const ExerciceForm = ({ initialData = {}, onSave, onCancel }) => {
         <input className="form-control" type="number" value={annee} onChange={e => setAnnee(e.target.value)} required />
       </div>
       <div className="mb-2">
-        <label>Taux consommé</label>
+        <label>Taux consommé (%)</label>
         <input className="form-control" type="number" step="0.01" value={taux_consomme} onChange={e => setTauxConsomme(e.target.value)} required />
       </div>
       <div className="mb-2">
-        <label>Pourcentage consommé</label>
+        <label>Pourcentage consommé (%)</label>
         <input className="form-control" type="number" step="0.01" value={pourcentage_consomme} onChange={e => setPourcentageConsomme(e.target.value)} required />
       </div>
       <div className="d-flex gap-2 mt-2">
@@ -53,7 +69,7 @@ const ExerciceForm = ({ initialData = {}, onSave, onCancel }) => {
 const DeleteConfirm = ({ noms, onConfirm, onCancel }) => (
   <div>
     <p>
-      Voulez-vous vraiment supprimer {noms.length > 1 ? "les exercices sélectionnés" : "cet exercice"} ?
+      Voulez-vous vraiment supprimer {noms.length > 1 ? 'les exercices sélectionnés' : 'cet exercice'} ?
       <br />
       <strong>{noms.join(', ')}</strong>
     </p>
@@ -65,71 +81,90 @@ const DeleteConfirm = ({ noms, onConfirm, onCancel }) => (
 );
 
 const ExerciceTable = () => {
-  const [data, setData] = useState([]);
+  const dispatch = useDispatch();
+
+  // Redux state
+  const items   = useSelector(selectExercices);
+  const loading = useSelector(selectExercicesLoading);
+  const error   = useSelector(selectExercicesError);
+
+  // UI local
   const [selectedRows, setSelectedRows] = useState([]);
   const [toggleDelet, setToggleDelet] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState('');
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState(null);
 
-  const [error, setError] = useState(null);
+  // Fetch au montage
+  useEffect(() => {
+    dispatch(fetchExercices());
+  }, [dispatch]);
 
-  // -- API fetch --
-  const fetchExercices = async () => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.get('/feicom/api/exercices/');
-      setData(response.data);
-      setError(null);
-    } catch (err) {
-      setError("Erreur lors de la récupération des exercices : " + err.message);
-    } finally {
-      setLoading(false);
-    }
+  // Recherche
+  const filteredData = useMemo(() => {
+    const q = searchText?.trim().toLowerCase();
+    if (!q) return items || [];
+    return (items || []).filter(row =>
+      Object.values(row || {}).join(' ').toLowerCase().includes(q)
+    );
+  }, [items, searchText]);
+
+  // CRUD
+  const handleAdd = () => {
+    setModalTitle('Ajouter un exercice');
+    setModalContent(
+      <ExerciceForm
+        onSave={async (form) => {
+          await dispatch(createExercice(form)).unwrap();
+          setModalOpen(false);
+        }}
+        onCancel={() => setModalOpen(false)}
+      />
+    );
+    setModalOpen(true);
   };
 
-  useEffect(() => {
-    fetchExercices();
-  }, []);
+  const handleEdit = (row) => {
+    setModalTitle("Modifier l'exercice");
+    setModalContent(
+      <ExerciceForm
+        initialData={row}
+        onSave={async (form) => {
+          await dispatch(updateExercice({ id: row.id, data: form })).unwrap();
+          setModalOpen(false);
+        }}
+        onCancel={() => setModalOpen(false)}
+      />
+    );
+    setModalOpen(true);
+  };
 
-  // Suppression multiple
-  const handleDelete = () => {
+  const handleDeleteSingle = (row) => {
+    setModalTitle("Suppression de l'exercice");
+    setModalContent(
+      <DeleteConfirm
+        noms={[`Exercice ${row.annee}`]}
+        onConfirm={async () => {
+          await dispatch(deleteExercice(row.id)).unwrap();
+          setModalOpen(false);
+        }}
+        onCancel={() => setModalOpen(false)}
+      />
+    );
+    setModalOpen(true);
+  };
+
+  const handleDeleteMany = () => {
     setModalTitle('Suppression de plusieurs exercices');
     setModalContent(
       <DeleteConfirm
         noms={selectedRows.map(r => `Exercice ${r.annee}`)}
         onConfirm={async () => {
-          try {
-            await Promise.all(
-              selectedRows.map(row =>
-                axiosInstance.delete(`/feicom/api/exercices/${row.id}/`)
-              )
-            );
-            setToggleDelet(!toggleDelet);
-            setModalOpen(false); 
-            fetchExercices();
-          } catch (err) {
-            setError("Erreur lors de la suppression : " + err.message);
-          }
-        }}
-        onCancel={() => setModalOpen(false)}
-      />
-    );
-    setModalOpen(true);
-  };
-
-  // Suppression simple
-  const handleDeleteSingle = row => {
-    setModalTitle('Suppression de l\'exercice');
-    setModalContent(
-      <DeleteConfirm
-        noms={[`Exercice ${row.annee}`]}
-        onConfirm={async () => {
-          await axiosInstance.delete(`/feicom/api/exercices/${row.id}/`);
+          await dispatch(deleteManyExercices(selectedRows.map(r => r.id))).unwrap();
+          setToggleDelet(v => !v);
           setModalOpen(false);
-          fetchExercices();
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -137,105 +172,78 @@ const ExerciceTable = () => {
     setModalOpen(true);
   };
 
-  // Ajout
-  const handleAdd = () => {
-    setModalTitle('Ajouter un exercice');
-    setModalContent(
-      <ExerciceForm
-        onSave={async (data) => {
-          await axiosInstance.post('/feicom/api/exercices/', data);
-          setModalOpen(false);
-          fetchExercices();
-        }}
-        onCancel={() => setModalOpen(false)}
-      />
-    );
-    setModalOpen(true);
-  };
-
-  // Modification
-  const handleEdit = row => {
-    setModalTitle('Modifier l\'exercice');
-    setModalContent(
-      <ExerciceForm
-        initialData={row}
-        onSave={async (data) => {
-          await axiosInstance.put(`/feicom/api/exercices/${row.id}/`, data);
-          setModalOpen(false);
-          fetchExercices();
-        }}
-        onCancel={() => setModalOpen(false)}
-      />
-    );
-    setModalOpen(true);
-  };
-
-  const handleRowSelected = useCallback(state => {
+  const handleRowSelected = useCallback((state) => {
     setSelectedRows(state.selectedRows);
   }, []);
 
-  // Colonnes du tableau
+  // Helpers affichage % (convertir string -> nombre sûr)
+  const toPct = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.min(Math.max(n, 0), 100) : 0;
+  };
+
+  // Colonnes
   const tableColumns = [
-    { name: '#', selector: (row, index) => index + 1, width: '50px', center: true },
-    { name: "Budget", selector: row => row.budget, sortable: true },
-    { name: "Année", selector: row => row.annee, sortable: true },
-    { name: "Taux consommé", selector: row => row.taux_consomme, sortable:true,
-      // ajouter une barre de pourcentage
-      cell: row => (
-        <div className='progress' style={{ height: '20px', minWidth: '100px' }}>
-          <div 
-            className='progress-bar' 
-            role='progressbar' 
-            style={{ width: row.taux_consomme + '%' }} 
-            aria-valuenow={row.taux_consomme} 
-            aria-valuemin="0" 
-            aria-valuemax="100"
-          >
-            {row.taux_consomme + '%'}
+    { name: '#', selector: (row, index) => index + 1, width: '60px', center: true },
+    { name: 'Budget', selector: row => row.budget, sortable: true },
+    { name: 'Année', selector: row => row.annee, sortable: true },
+    {
+      name: 'Taux consommé',
+      selector: row => row.taux_consomme,
+      sortable: true,
+      cell: row => {
+        const val = toPct(row.taux_consomme);
+        return (
+          <div className="progress" style={{ height: 20, minWidth: 120 }}>
+            <div
+              className="progress-bar"
+              role="progressbar"
+              style={{ width: `${val}%` }}
+              aria-valuenow={val}
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              {val}%
+            </div>
           </div>
-        </div>
-      )
-     },
-    { name: "Pourcentage consommé", selector: row => row.pourcentage_consomme, sortable:true,
-      // ajouter une barre de pourcentage
-      cell: row => (
-        <div className='progress' style={{ height: '20px', minWidth: '100px' }}>
-          <div 
-            className='progress-bar bg-success' 
-            role='progressbar' 
-            style={{ width: row.pourcentage_consomme + '%' }} 
-            aria-valuenow={row.pourcentage_consomme} 
-            aria-valuemin="0" 
-            aria-valuemax="100"
-          >
-            {row.pourcentage_consomme + '%'}
+        );
+      }
+    },
+    {
+      name: 'Pourcentage consommé',
+      selector: row => row.pourcentage_consomme,
+      sortable: true,
+      cell: row => {
+        const val = toPct(row.pourcentage_consomme);
+        return (
+          <div className="progress" style={{ height: 20, minWidth: 120 }}>
+            <div
+              className="progress-bar bg-success"
+              role="progressbar"
+              style={{ width: `${val}%` }}
+              aria-valuenow={val}
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              {val}%
+            </div>
           </div>
-        </div>
-      )
-     },
+        );
+      }
+    },
     {
       name: 'Actions',
+      width: '140px',
       cell: row => (
-        <div className='d-flex gap-1'>
-          <Btn attrBtn={{ 
-            color: 'primary', 
-            size: 'sm', 
-            className: 'btn-sm py-1 px-2', 
-            onClick: () => handleEdit(row) 
-          }}>
-            <i className="fa fa-edit"></i>
+        <div className="d-flex gap-1">
+          <Btn attrBtn={{ color: 'primary', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => handleEdit(row) }}>
+            <i className="fa fa-edit" />
           </Btn>
-          <Btn attrBtn={{ 
-            color: 'danger', 
-            size: 'sm', 
-            className: 'btn-sm py-1 px-2', 
-            onClick: () => handleDeleteSingle(row) 
-          }}>
-            <i className="fa fa-trash"></i>
+          <Btn attrBtn={{ color: 'danger', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => handleDeleteSingle(row) }}>
+            <i className="fa fa-trash" />
           </Btn>
         </div>
       ),
-      width: '120px',
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
@@ -244,19 +252,32 @@ const ExerciceTable = () => {
 
   return (
     <Fragment>
-      <div className='d-flex align-items-center justify-content-between mb-2'>
+      <div className="d-flex align-items-center justify-content-between mb-2">
         <H4 attrH4={{ className: 'text-muted m-0' }}>Gestion des Exercices</H4>
         <Btn attrBtn={{ color: 'success', onClick: handleAdd }}>Ajouter</Btn>
       </div>
-      {error && <div className='alert alert-danger'>{error}</div>}
+
+      <input
+        type="text"
+        className="form-control mb-2"
+        placeholder="Recherche"
+        value={searchText}
+        onChange={(e) => setSearchText(e.target.value)}
+      />
+
+      {error && <div className="alert alert-danger">{error}</div>}
+
       {selectedRows.length > 0 && (
-        <div className='d-flex align-items-center justify-content-between bg-light-info p-2 mb-2'>
-          <H4 attrH4={{ className: 'text-muted m-0' }}>Supprimer la sélection</H4>
-          <Btn attrBtn={{ color: 'danger', onClick: handleDelete }}>Supprimer</Btn>
+        <div className="d-flex align-items-center justify-content-between bg-light-info p-2 mb-2">
+          <H4 attrH4={{ className: 'text-muted m-0' }}>
+            Supprimer la sélection ({selectedRows.length})
+          </H4>
+          <Btn attrBtn={{ color: 'danger', onClick: handleDeleteMany }}>Supprimer</Btn>
         </div>
       )}
+
       <DataTable
-        data={data}
+        data={filteredData}
         columns={tableColumns}
         striped
         center
@@ -267,6 +288,7 @@ const ExerciceTable = () => {
         progressPending={loading}
         noDataComponent="Aucune donnée"
       />
+
       <CommonModal isOpen={modalOpen} title={modalTitle} toggler={() => setModalOpen(false)}>
         {modalContent}
       </CommonModal>

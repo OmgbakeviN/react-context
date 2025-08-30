@@ -1,8 +1,19 @@
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useState, useMemo } from 'react';
 import DataTable from 'react-data-table-component';
 import { Btn, H4 } from '../../../../AbstractElements';
 import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchEntreprises,
+  createEntreprise,
+  updateEntreprise,
+  deleteEntreprise,
+  deleteManyEntreprises,
+  selectEntreprises,
+  selectEntreprisesLoading,
+  selectEntreprisesError
+} from '../../../../reduxtool/entreprisesSlice';
 
 // --- Formulaire entreprise ---
 const EntrepriseForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -82,60 +93,47 @@ const DeleteConfirm = ({ noms, onConfirm, onCancel }) => (
 );
 
 const EntrepriseTable = () => {
-  const [data, setData] = useState([]);
+
+  const dispatch = useDispatch();
+
+  // redux state
+  const items = useSelector(selectEntreprises);
+  const loading = useSelector(selectEntreprisesLoading);
+  const error = useSelector(selectEntreprisesError);
+
+  // ui local state
   const [selectedRows, setSelectedRows] = useState([]);
   const [toggleDelet, setToggleDelet] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [searchText,setSearchText] = useState()
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState(null);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const [error, setError] = useState(null);
-  const [searchText, setSearchText] = useState('');
-
-  // --- API fetch ---
-  const fetchEntreprises = async () => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.get('/feicom/api/entreprises/');
-      setData(response.data);
-      setError(null);
-    } catch (err) {
-      setError("Erreur lors de la récupération des entreprises : " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // filtering search
-  const filteredData = data.filter(row => 
-    Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
-  );
-
+  // fetch on mount 
   useEffect(() => {
-    fetchEntreprises();
-  }, []);
+    dispatch(fetchEntreprises());
+  }, [dispatch]);
 
-  // Suppression multiple
-  const handleDelete = () => {
-    setModalTitle('Suppression de plusieurs entreprises');
+  // search filtering
+  const filteredData = useMemo(() => {
+    const q = searchText?.toLowerCase().trim();
+    if (!q) return items;
+    return (items || []).filter(row =>
+      Object.values(row || {}).join(' ').toLowerCase().includes(q)
+    );
+  }, [items, searchText]);
+
+  // CRUD UI
+
+  // add entreprise
+  const handleAdd = () => {
+    setModalTitle('Ajouter une entreprise');
     setModalContent(
-      <DeleteConfirm
-        noms={selectedRows.map(r => r.nom)}
-        onConfirm={async () => {
-          try {
-            await Promise.all(
-              selectedRows.map(row =>
-                axiosInstance.delete(`/feicom/api/entreprises/${row.id}/`)
-              )
-            );
-            setToggleDelet(!toggleDelet);
-            setModalOpen(false); 
-            fetchEntreprises();
-          } catch (err) {
-            setError("Erreur lors de la suppression : " + err.message);
-          }
+      <EntrepriseForm
+        onSave={async (form) => {
+          await dispatch(createEntreprise(form)).unwrap();
+          setModalOpen(false);
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -143,16 +141,31 @@ const EntrepriseTable = () => {
     setModalOpen(true);
   };
 
-  // Suppression simple
-  const handleDeleteSingle = row => {
+  // edit entreprise
+  const handleEdit = (row) => {
+    setModalTitle('Modifier l\'entreprise');
+    setModalContent(
+      <EntrepriseForm
+        initialData={row}
+        onSave={async (form) => {
+          await dispatch(updateEntreprise({ id: row.id, data: form })).unwrap();
+          setModalOpen(false);
+        }}
+        onCancel={() => setModalOpen(false)}
+      />
+    );
+    setModalOpen(true);
+  };
+
+  // supprimer une entreprise
+  const handleDeleteSingle = (row) => {
     setModalTitle('Suppression de l\'entreprise');
     setModalContent(
       <DeleteConfirm
         noms={[row.nom]}
         onConfirm={async () => {
-          await axiosInstance.delete(`/feicom/api/entreprises/${row.id}/`);
+          await dispatch(deleteEntreprise(row.id)).unwrap();
           setModalOpen(false);
-          fetchEntreprises();
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -160,32 +173,16 @@ const EntrepriseTable = () => {
     setModalOpen(true);
   };
 
-  // Ajout
-  const handleAdd = () => {
-    setModalTitle('Ajouter une entreprise');
+  // supprimer plusieurs entreprises
+  const handleDeleteMany = () => {
+    setModalTitle('Suppression de plusieurs entreprises');
     setModalContent(
-      <EntrepriseForm
-        onSave={async (data) => {
-          await axiosInstance.post('/feicom/api/entreprises/', data);
+      <DeleteConfirm
+        noms={selectedRows.map(r => r.nom)}
+        onConfirm={async () => {
+          await dispatch(deleteManyEntreprises(selectedRows.map(r => r.id))).unwrap();
+          setToggleDelet(v => !v);
           setModalOpen(false);
-          fetchEntreprises();
-        }}
-        onCancel={() => setModalOpen(false)}
-      />
-    );
-    setModalOpen(true);
-  };
-
-  // Modification
-  const handleEdit = row => {
-    setModalTitle('Modifier l\'entreprise');
-    setModalContent(
-      <EntrepriseForm
-        initialData={row}
-        onSave={async (data) => {
-          await axiosInstance.put(`/feicom/api/entreprises/${row.id}/`, data);
-          setModalOpen(false);
-          fetchEntreprises();
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -248,8 +245,8 @@ const EntrepriseTable = () => {
       {error && <div className='alert alert-danger'>{error}</div>}
       {selectedRows.length > 0 && (
         <div className='d-flex align-items-center justify-content-between bg-light-info p-2 mb-2'>
-          <H4 attrH4={{ className: 'text-muted m-0' }}>Supprimer la sélection</H4>
-          <Btn attrBtn={{ color: 'danger', onClick: handleDelete }}>Supprimer</Btn>
+          <H4 attrH4={{ className: 'text-muted m-0' }}>Supprimer la sélection ({selectedRows.length})</H4>
+          <Btn attrBtn={{ color: 'danger', onClick: handleDeleteMany }}>Supprimer</Btn>
         </div>
       )}
       <DataTable
