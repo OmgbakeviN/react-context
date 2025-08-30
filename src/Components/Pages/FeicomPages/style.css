@@ -1,0 +1,308 @@
+/* Reset de base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.container {
+    width: 90%;
+    max-width: 900px;
+    margin: 30px auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #0077b6;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e0f7fa;
+}
+
+.header-info p {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+/* Sections */
+.section-title h3 {
+    color: #0077b6;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    font-size: 18px;
+    
+}
+.section-titre h3 {
+    color: #0077b6;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    font-size: 18px;
+    
+}
+
+.general-details .location-general  {
+    margin-bottom: 5px;
+    font-weight: 500;
+    display: flex;
+     justify-content: space-between;
+     padding: 8px;
+     
+}
+
+
+.general-details .location-details  {
+    margin-bottom: 5px;
+    font-weight: 500;
+    display: flex;
+     justify-content: space-between;
+     padding: 8px;
+     border-bottom:1px solid #0077b6;
+}
+
+.left-column{
+    width:60%
+}
+.right-column{
+    width:40%
+}
+
+/* Table-like rows */
+.table-section .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 8px;
+    background-color: rgb(230, 230, 249);;
+    border-radius: 4px;
+}
+
+.table-section .row p {
+    margin: 0;
+}
+
+/* Deux colonnes */
+.two-column-layout {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.column {
+    flex: 1;
+    background-color: #f1f8f9;
+    padding: 15px;
+    border-radius: 6px;
+}
+
+.column h4 {
+    background-color:rgb(193, 193, 249);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.sub-section h5 {
+    margin-top:5px;
+    border-bottom: 1px solid rgb(250, 190, 190);
+    
+    margin-bottom: 5px;
+    font-size: 15px;
+}
+
+.sub-section p {
+    margin-left: 10px;
+    margin-bottom: 3px;
+}
+
+/* Footer */
+footer {
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #0077b6;
+    font-size: 9px;
+    color: #555;
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+}
+
+footer p {
+    
+    margin-left:80px;
+    
+    
+}
+
+
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #0077b6;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    background-color: #0077b6;
+    color:white;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color:white;
+     background-color:  #0077b6;
+     margin-left:8px;
+}
+
+.header-info p {
+    font-weight: bold;
+    margin-bottom: 5px;
+    margin-right:8px;
+    margin-top:5px
+}
+
+
+.contener {
+  margin: auto;
+  margin-top: 20px;
+  margin-bottom: 60px;
+    margin-bottom: 5px;
+    font-weight: 500;
+     
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+th, td {
+  border: 1px solid rgb(188, 188, 247);;
+  padding: 30px;
+  vertical-align: top;
+}
+
+th {
+  
+  text-align: left;
+}
+
+.images {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.img-block {
+  width: 48%;
+  text-align: center;
+}
+
+.img-block img {
+  width: 100%;
+  height: auto;
+  border: 1px solid #ccc;
+}
+
+.img-block h4 {
+  width: 100%;
+  height: auto;
+  border: 1px solid #ccc;
+}
+
+
+
+
+.paulimages {
+  margin-bottom: 30px;
+}
+
+.rower {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.img-blocked {
+  width: 48%;
+  text-align: center;
+}
+
+.img-blocked img {
+  width: 100%;
+  border: 1px solid #ccc;
+}
+
+.appreciation {
+  margin: 50px ;
+  padding: 50px;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  margin-top: 10px;
+  
+}
+
+.appreciation p{
+  
+    background-color:rgb(222, 252, 184);
+}
+
+.appreciation label {
+  
+ margin-left:40px;
+}
+
+.signatures {
+  margin-top: 20px;
+}
+
+.signatures p {
+  font-weight: bold;
+  background-color: rgb(222, 222, 248);
+  border:1px solid black;
+}
+
+.sign-line {
+    margin: 8px 0;
+    flex: 1;
+    text-align: center;
+}
+
+.sign-row{
+    display:flex;
+    justify-content:space-between;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.signatures.sign-line{
+     margin-bottom: 5px;
+    font-weight: 500;
+    display: flex;
+     justify-content: space-between;
+}

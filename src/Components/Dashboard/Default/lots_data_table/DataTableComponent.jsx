@@ -229,12 +229,6 @@ const LotTable = () => {
       )
     },
     {
-      name: 'Pourcentage',
-      selector: row => row.pourcentage,
-      sortable: true,
-      cell: row => `${row.pourcentage ?? 0}%`
-    },
-    {
       name: 'Projet',
       selector: row => (
         typeof row.projet === 'object'

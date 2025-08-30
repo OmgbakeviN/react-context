@@ -217,8 +217,6 @@ const VisiteTable = () => {
   const tableColumns = [
     { name: '#', selector: (row, index) => index + 1, width: '50px', center: true },
     { name: "Date", selector: row => row.date, sortable: true },
-    { name: "Ancien relevé", selector: row => row.old_record },
-    { name: "Nouveau relevé", selector: row => row.new_record },
     { name: "Observation", selector: row => row.observation },
     { name: "Projet", selector: row => row.projet.libelle }, // (affiche l'id du projet, tu peux mapper le nom si tu veux)
     {

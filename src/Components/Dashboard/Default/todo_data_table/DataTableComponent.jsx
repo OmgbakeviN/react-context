@@ -218,12 +218,6 @@ const TodoTable = () => {
       ),
     },
     {
-      name: 'Pourcentage',
-      selector: row => row.pourcentage,
-      sortable: true,
-      cell: row => `${row.pourcentage ?? 0}%`,
-    },
-    {
       name: 'Lot',
       selector: row => (typeof row.lot === 'object' ? (row.lot.nom ?? row.lot.id) : row.lot),
       sortable: true,
