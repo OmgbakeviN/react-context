@@ -149,6 +149,9 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
     })();
   }, []);
 
+
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({
@@ -407,6 +410,24 @@ const ProjetTable = () => {
     );
     setModalOpen(true);
   };
+
+    // Par défaut : sélectionner l'exercice = année courante si présent dans la liste
+    useEffect(() => {
+      if (!exerciceOptions?.length) return;                      // rien à faire si pas encore chargé
+      if (filters.exercice !== '' && filters.exercice != null) return; // ne pas écraser un choix existant
+  
+      const currentYear = String(new Date().getFullYear());
+      const match = exerciceOptions.find(o => String(o.label) === currentYear);
+  
+      if (match) {
+        setFilters(f => ({ ...f, exercice: Number(match.value) }));
+      } 
+      // (optionnel) fallback : si l'année courante n'existe pas, prendre la plus récente
+      // else {
+      //   const latest = exerciceOptions.reduce((a, b) => (+b.label > +a.label ? b : a), exerciceOptions[0]);
+      //   if (latest) setFilters(f => ({ ...f, exercice: Number(latest.value) }));
+      // }
+    }, [exerciceOptions, filters.exercice, setFilters]);
 
   // columns
   const columns = [
