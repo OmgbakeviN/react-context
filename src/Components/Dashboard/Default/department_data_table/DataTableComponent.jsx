@@ -128,12 +128,6 @@ const handleDelete = () => {
   // --- COLUMNS (créées APRÈS les handlers) --- //
   const tableColumns = [
     {
-      name: '#',
-      selector: (row, index) => index + 1,
-      width: '50px',
-      center: true,
-    },
-    {
       name: 'Nom du Département',
       selector: row => row.nom,
       sortable: true,

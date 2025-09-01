@@ -184,7 +184,6 @@ const ExerciceTable = () => {
 
   // Colonnes
   const tableColumns = [
-    { name: '#', selector: (row, index) => index + 1, width: '60px', center: true },
     { name: 'Budget', selector: row => row.budget, sortable: true },
     { name: 'Année', selector: row => row.annee, sortable: true },
     {

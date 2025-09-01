@@ -410,14 +410,13 @@ const ProjetTable = () => {
 
   // columns
   const columns = [
-    { name: '#', selector: (row, i) => i + 1, width: '60px', center: true },
     { name: 'Libellé', selector: r => r.libelle, sortable: true, wrap: true },
-    { name: 'Durée', selector: r => r.duree },
-    { name: 'Montant HT', selector: r => r.montant_ht },
-    { name: 'Type', selector: r => r.type },
-    { name: 'Numéro convention', selector: r => r.numero_convention, wrap: true },
-    { name: 'Date début', selector: r => r.date_debut },
-    { name: 'Date fin', selector: r => r.date_fin },
+    { name: 'Durée', selector: r => r.duree, sortable: true },
+    { name: 'Montant HT', selector: r => r.montant_ht, sortable: true },
+    { name: 'Type', selector: r => r.type, sortable: true },
+    { name: 'Numéro convention', selector: r => r.numero_convention, wrap: true, sortable: true },
+    { name: 'Date début', selector: r => r.date_debut, sortable: true },
+    { name: 'Date fin', selector: r => r.date_fin, sortable: true },
     { name: 'Entreprise', selector: r => r.entreprise.nom },
     { name: 'Commune', selector: r => (typeof r.commune === 'object' ? r.commune?.nom : r.commune) },
     { name: 'Exercice', selector: r => (typeof r.exercice === 'object' ? r.exercice?.annee : r.exercice) },

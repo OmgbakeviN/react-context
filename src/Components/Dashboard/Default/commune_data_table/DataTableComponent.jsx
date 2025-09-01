@@ -198,12 +198,6 @@ const CommuneTable = () => {
   // Colonnes du tableau
   const tableColumns = [
     {
-      name: '#',
-      selector: (row, index) => index + 1,
-      width: '50px',
-      center: true,
-    },
-    {
       name: "Nom de la Commune",
       selector: row => row.nom,
       sortable: true,

@@ -3,6 +3,7 @@ import DataTable from 'react-data-table-component';
 import { Btn, H4 } from '../../../../AbstractElements';
 import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
+import { useNavigate } from 'react-router';
 
 // --- Formulaire visite ---
 const VisiteForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -109,6 +110,7 @@ const VisiteTable = () => {
 
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const navigate = useNavigate();
 
   // -- API fetch --
   const fetchVisites = async () => {
@@ -215,14 +217,22 @@ const VisiteTable = () => {
 
   // Colonnes du tableau
   const tableColumns = [
-    { name: '#', selector: (row, index) => index + 1, width: '50px', center: true },
     { name: "Date", selector: row => row.date, sortable: true },
-    { name: "Observation", selector: row => row.observation },
-    { name: "Projet", selector: row => row.projet.libelle }, // (affiche l'id du projet, tu peux mapper le nom si tu veux)
+    { name: "Observation", selector: row => row.observation, sortable: true },
+    { name: "Projet", selector: row => row.projet.libelle, sortable: true },
     {
       name: 'Actions',
       cell: row => (
         <div className='d-flex gap-1'>
+          {/* on ajoute le detail de project dune visite avec fa-eye */}
+          <Btn attrBtn={{ 
+            color: 'info', 
+            size: 'sm', 
+            className: 'btn-sm py-1 px-2', 
+            onClick: () => navigate(`${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/${row.id}/detail`)
+          }}>
+            <i className="fa fa-eye"></i>
+          </Btn>
           <Btn attrBtn={{ 
             color: 'primary', 
             size: 'sm', 

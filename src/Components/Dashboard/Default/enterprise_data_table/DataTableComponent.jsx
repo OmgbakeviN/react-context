@@ -196,14 +196,13 @@ const EntrepriseTable = () => {
 
   // Colonnes du tableau
   const tableColumns = [
-    { name: '#', selector: (row, index) => index + 1, width: '50px', center: true },
     { name: "Nom", selector: row => row.nom, sortable: true },
-    { name: "RCC", selector: row => row.rcc },
-    { name: "NIU", selector: row => row.niu },
-    { name: "Promoteur", selector: row => row.promoteur },
-    { name: "Contact", selector: row => row.contact },
-    { name: "Email", selector: row => row.email },
-    { name: "Siège social", selector: row => row.siege_social },
+    { name: "RCC", selector: row => row.rcc, sortable: true },
+    { name: "NIU", selector: row => row.niu, sortable: true },
+    { name: "Promoteur", selector: row => row.promoteur, sortable: true },
+    { name: "Contact", selector: row => row.contact, sortable: true },
+    { name: "Email", selector: row => row.email, sortable: true },
+    { name: "Siège social", selector: row => row.siege_social, sortable: true },
     {
       name: 'Actions',
       cell: row => (
