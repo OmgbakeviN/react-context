@@ -8,6 +8,12 @@ import {
   Dropdown, DropdownToggle, DropdownMenu,
   Input, Button, Spinner, Label
 } from 'reactstrap';
+// dayjs pour le format des dates
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+dayjs.locale('fr');
+dayjs.extend(localizedFormat);
 
 
 const CommuneSelect = ({
@@ -436,8 +442,8 @@ const ProjetTable = () => {
     { name: 'Montant HT', selector: r => r.montant_ht, sortable: true },
     { name: 'Type', selector: r => r.type, sortable: true },
     { name: 'Numéro convention', selector: r => r.numero_convention, wrap: true, sortable: true },
-    { name: 'Date début', selector: r => r.date_debut, sortable: true },
-    { name: 'Date fin', selector: r => r.date_fin, sortable: true },
+    { name: 'Date début', selector: r => r.date_debut, sortable: true, cell: (row) => dayjs(row.date_debut).format('dddd, DD MMMM YYYY') },
+    { name: 'Date fin', selector: r => r.date_fin, sortable: true, cell: (row) => dayjs(row.date_fin).format('dddd, DD MMMM YYYY') },
     { name: 'Entreprise', selector: r => r.entreprise.nom },
     { name: 'Commune', selector: r => (typeof r.commune === 'object' ? r.commune?.nom : r.commune) },
     { name: 'Exercice', selector: r => (typeof r.exercice === 'object' ? r.exercice?.annee : r.exercice) },

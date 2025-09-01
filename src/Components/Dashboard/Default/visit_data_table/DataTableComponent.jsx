@@ -4,6 +4,12 @@ import { Btn, H4 } from '../../../../AbstractElements';
 import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
 import { useNavigate } from 'react-router';
+// format de la date 
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+dayjs.locale('fr');
+dayjs.extend(localizedFormat);
 
 // --- Formulaire visite ---
 const VisiteForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -217,7 +223,7 @@ const VisiteTable = () => {
 
   // Colonnes du tableau
   const tableColumns = [
-    { name: "Date", selector: row => row.date, sortable: true },
+    { name: "Date", selector: row => row.date, sortable: true, cell: (row) => dayjs(row.date).format('dddd, DD MMMM YYYY') },
     { name: "Observation", selector: row => row.observation, sortable: true },
     { name: "Projet", selector: row => row.projet.libelle, sortable: true },
     {
