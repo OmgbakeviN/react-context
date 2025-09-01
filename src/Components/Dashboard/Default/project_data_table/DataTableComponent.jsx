@@ -8,6 +8,12 @@ import {
   Dropdown, DropdownToggle, DropdownMenu,
   Input, Button, Spinner, Label
 } from 'reactstrap';
+// dayjs pour le format des dates
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+dayjs.locale('fr');
+dayjs.extend(localizedFormat);
 
 
 const CommuneSelect = ({
@@ -148,6 +154,9 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
       }
     })();
   }, []);
+
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -408,16 +417,33 @@ const ProjetTable = () => {
     setModalOpen(true);
   };
 
+    // Par défaut : sélectionner l'exercice = année courante si présent dans la liste
+    useEffect(() => {
+      if (!exerciceOptions?.length) return;                      // rien à faire si pas encore chargé
+      if (filters.exercice !== '' && filters.exercice != null) return; // ne pas écraser un choix existant
+  
+      const currentYear = String(new Date().getFullYear());
+      const match = exerciceOptions.find(o => String(o.label) === currentYear);
+  
+      if (match) {
+        setFilters(f => ({ ...f, exercice: Number(match.value) }));
+      } 
+      // (optionnel) fallback : si l'année courante n'existe pas, prendre la plus récente
+      // else {
+      //   const latest = exerciceOptions.reduce((a, b) => (+b.label > +a.label ? b : a), exerciceOptions[0]);
+      //   if (latest) setFilters(f => ({ ...f, exercice: Number(latest.value) }));
+      // }
+    }, [exerciceOptions, filters.exercice, setFilters]);
+
   // columns
   const columns = [
-    { name: '#', selector: (row, i) => i + 1, width: '60px', center: true },
     { name: 'Libellé', selector: r => r.libelle, sortable: true, wrap: true },
-    { name: 'Durée', selector: r => r.duree },
-    { name: 'Montant HT', selector: r => r.montant_ht },
-    { name: 'Type', selector: r => r.type },
-    { name: 'Numéro convention', selector: r => r.numero_convention, wrap: true },
-    { name: 'Date début', selector: r => r.date_debut },
-    { name: 'Date fin', selector: r => r.date_fin },
+    { name: 'Durée', selector: r => r.duree, sortable: true },
+    { name: 'Montant HT', selector: r => r.montant_ht, sortable: true },
+    { name: 'Type', selector: r => r.type, sortable: true },
+    { name: 'Numéro convention', selector: r => r.numero_convention, wrap: true, sortable: true },
+    { name: 'Date début', selector: r => r.date_debut, sortable: true, cell: (row) => dayjs(row.date_debut).format('dddd, DD MMMM YYYY') },
+    { name: 'Date fin', selector: r => r.date_fin, sortable: true, cell: (row) => dayjs(row.date_fin).format('dddd, DD MMMM YYYY') },
     { name: 'Entreprise', selector: r => r.entreprise.nom },
     { name: 'Commune', selector: r => (typeof r.commune === 'object' ? r.commune?.nom : r.commune) },
     { name: 'Exercice', selector: r => (typeof r.exercice === 'object' ? r.exercice?.annee : r.exercice) },

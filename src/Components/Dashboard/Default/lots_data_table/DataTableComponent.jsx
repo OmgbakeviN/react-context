@@ -217,7 +217,6 @@ const LotTable = () => {
 
   // Colonnes
   const tableColumns = [
-    { name: '#', selector: (row, index) => index + 1, width: '60px', center: true },
     { name: 'Nom', selector: row => row.nom, sortable: true },
     {
       name: 'Statut',
@@ -226,7 +225,8 @@ const LotTable = () => {
         <span className={`badge badge-${statusBadgeClass(row.statut)}`}>
           {row.statut}
         </span>
-      )
+      ),
+      sortable: true,
     },
     {
       name: 'Projet',

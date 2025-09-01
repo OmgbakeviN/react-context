@@ -164,12 +164,6 @@ const DataTableComponent = () => {
   // Colonnes du tableau
   const tableColumns = [
     {
-      name: '#',
-      selector: (row, index) => index + 1,
-      width: '50px',
-      center: true,
-    },
-    {
       name: "Nom de l'Agence",
       selector: row => row.nom,
       sortable: true,
