@@ -435,18 +435,66 @@ const ProjetTable = () => {
       // }
     }, [exerciceOptions, filters.exercice, setFilters]);
 
+      // Helpers affichage % (convertir string -> nombre sûr)
+  const toPct = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.min(Math.max(n, 0), 100) : 0;
+  };
+
   // columns
   const columns = [
     { name: 'Libellé', selector: r => r.libelle, sortable: true, wrap: true },
     { name: 'Durée', selector: r => r.duree, sortable: true },
     { name: 'Montant HT', selector: r => r.montant_ht, sortable: true },
-    { name: 'Type', selector: r => r.type, sortable: true },
-    { name: 'Numéro convention', selector: r => r.numero_convention, wrap: true, sortable: true },
     { name: 'Date début', selector: r => r.date_debut, sortable: true, cell: (row) => dayjs(row.date_debut).format('dddd, DD MMMM YYYY') },
     { name: 'Date fin', selector: r => r.date_fin, sortable: true, cell: (row) => dayjs(row.date_fin).format('dddd, DD MMMM YYYY') },
-    { name: 'Entreprise', selector: r => r.entreprise.nom },
-    { name: 'Commune', selector: r => (typeof r.commune === 'object' ? r.commune?.nom : r.commune) },
-    { name: 'Exercice', selector: r => (typeof r.exercice === 'object' ? r.exercice?.annee : r.exercice) },
+    { name: 'Agence', selector: r => r.commune.departement.agence.nom, sortable: true },
+    { name: 'Entreprise', selector: r => r.entreprise.nom, sortable: true },
+    { name: 'Commune', selector: r => (typeof r.commune === 'object' ? r.commune?.nom : r.commune), sortable: true },
+    { name: 'Exercice', selector: r => (typeof r.exercice === 'object' ? r.exercice?.annee : r.exercice), sortable: true },
+    { name: 'Financement', 
+      selector: r => r.payment_percent, 
+      sortable: true ,
+      // on ajoute un percentage bar
+      cell: row => {
+        const val = row.payment_percent;
+        return (
+          <div className="progress" style={{ height: 20, minWidth: 120 }}>
+            <div
+              className="progress-bar"
+              role="progressbar"
+              style={{ width: `${val}%` }}
+              aria-valuenow={val}
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              {val}%
+            </div>
+          </div>
+        )
+      }
+    },
+    { name: 'Avancement', 
+      selector: r => r.Progress, 
+      sortable: true,
+      cell: row => {
+        const val = row.Progress;
+        return (
+          <div className="progress" style={{ height: 20, minWidth: 120 }}>
+            <div
+              className="progress-bar"
+              role="progressbar"
+              style={{ width: `${val}%` }}
+              aria-valuenow={val}
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              {val}%
+            </div>
+          </div>
+        )
+      }
+     },
     {
       name: 'Actions',
       cell: row => (
