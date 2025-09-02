@@ -224,6 +224,9 @@ const VisiteTable = () => {
   // Colonnes du tableau
   const tableColumns = [
     { name: "Date", selector: row => row.date, sortable: true, cell: (row) => dayjs(row.date).format('dddd, DD MMMM YYYY') },
+    { name: "Agence", selector: row => row.projet.commune.departement.agence.nom, sortable: true },
+    { name: "Commune", selector: row => row.projet.commune.nom, sortable: true },
+    { name: "Nouveau relevé", selector: row => row.new_record, sortable: true },
     { name: "Observation", selector: row => row.observation, sortable: true },
     { name: "Projet", selector: row => row.projet.libelle, sortable: true },
     {
