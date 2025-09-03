@@ -1,46 +1,56 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import DataTable from 'react-data-table-component';
-import { Btn, H4 } from '../../../../AbstractElements';
-import axiosInstance from '../../../../api/axios';
-import CommonModal from '../../../UiKits/Modals/common/modal';
-import { useNavigate } from 'react-router';
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import DataTable from "react-data-table-component";
+import { Btn, H4 } from "../../../../AbstractElements";
+import axiosInstance from "../../../../api/axios";
+import CommonModal from "../../../UiKits/Modals/common/modal";
+import { useNavigate } from "react-router";
 import {
-  Dropdown, DropdownToggle, DropdownMenu,
-  Input, Button, Spinner, Label
-} from 'reactstrap';
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  Input,
+  Button,
+  Spinner,
+  Label,
+} from "reactstrap";
 // dayjs pour le format des dates
-import dayjs from 'dayjs';
-import 'dayjs/locale/fr';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
-dayjs.locale('fr');
+import dayjs from "dayjs";
+import "dayjs/locale/fr";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+dayjs.locale("fr");
 dayjs.extend(localizedFormat);
 
-
 const CommuneSelect = ({
-  options = [],           // [{value,label}]
-  value = '',             // number | '' (toutes)
-  onChange,               // (newValue)=>void
-  placeholder = '-- Toutes les communes --',
+  options = [], // [{value,label}]
+  value = "", // number | '' (toutes)
+  onChange, // (newValue)=>void
+  placeholder = "-- Toutes les communes --",
   disabled = false,
 }) => {
   const [open, setOpen] = useState(false);
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return options;
-    return options.filter(o => o.label.toLowerCase().includes(s));
+    return options.filter((o) => o.label.toLowerCase().includes(s));
   }, [options, q]);
 
   const label = useMemo(() => {
-    const found = options.find(o => o.value === value);
+    const found = options.find((o) => o.value === value);
     return found ? found.label : placeholder;
   }, [options, value, placeholder]);
 
   const selectItem = (val) => {
     onChange?.(val);
     setOpen(false);
-    setQ('');
+    setQ("");
   };
 
   return (
@@ -57,22 +67,22 @@ const CommuneSelect = ({
           onChange={(e) => setQ(e.target.value)}
           className="mb-2"
         />
-        <div style={{ maxHeight: 260, overflowY: 'auto' }}>
+        <div style={{ maxHeight: 260, overflowY: "auto" }}>
           <Button
-            color={value === '' ? 'primary' : 'light'}
-            outline={value !== ''}
+            color={value === "" ? "primary" : "light"}
+            outline={value !== ""}
             className="w-100 text-start mb-1"
-            onClick={() => selectItem('')}
+            onClick={() => selectItem("")}
           >
             {placeholder}
           </Button>
           {filtered.length === 0 ? (
             <div className="text-muted small px-1 py-2">No results found…</div>
           ) : (
-            filtered.map(opt => (
+            filtered.map((opt) => (
               <Button
                 key={opt.value}
-                color={value === opt.value ? 'primary' : 'light'}
+                color={value === opt.value ? "primary" : "light"}
                 outline={value !== opt.value}
                 className="w-100 text-start mb-1"
                 onClick={() => selectItem(opt.value)}
@@ -93,17 +103,25 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
   const [duree, setDuree] = useState(initialData.duree || "");
   const [montant_ht, setMontantHt] = useState(initialData.montant_ht || "");
   const [type, setType] = useState(initialData.type || "");
-  const [numero_convention, setNumeroConvention] = useState(initialData.numero_convention || "");
+  const [numero_convention, setNumeroConvention] = useState(
+    initialData.numero_convention || ""
+  );
   const [date_debut, setDateDebut] = useState(initialData.date_debut || "");
   const [date_fin, setDateFin] = useState(initialData.date_fin || "");
   const [entreprise, setEntreprise] = useState(
-    typeof initialData.entreprise === "object" ? initialData.entreprise?.id : initialData.entreprise || ""
+    typeof initialData.entreprise === "object"
+      ? initialData.entreprise?.id
+      : initialData.entreprise || ""
   );
   const [commune, setCommune] = useState(
-    typeof initialData.commune === "object" ? initialData.commune?.id : initialData.commune || ""
+    typeof initialData.commune === "object"
+      ? initialData.commune?.id
+      : initialData.commune || ""
   );
   const [exercice, setExercice] = useState(
-    typeof initialData.exercice === "object" ? initialData.exercice?.id : initialData.exercice || ""
+    typeof initialData.exercice === "object"
+      ? initialData.exercice?.id
+      : initialData.exercice || ""
   );
 
   const [entrepriseOptions, setEntrepriseOptions] = useState([]);
@@ -117,9 +135,10 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
     (async () => {
       setLoadingEntreprises(true);
       try {
-        const res = await axiosInstance.get('/feicom/api/entreprises/');
-        const opts = (Array.isArray(res.data) ? res.data : (res.data?.results ?? []))
-          .map(it => ({ value: it.id, label: `${it.id} - ${it.nom}` }));
+        const res = await axiosInstance.get("/feicom/api/entreprises/");
+        const opts = (
+          Array.isArray(res.data) ? res.data : res.data?.results ?? []
+        ).map((it) => ({ value: it.id, label: `${it.id} - ${it.nom}` }));
         setEntrepriseOptions(opts);
       } finally {
         setLoadingEntreprises(false);
@@ -131,9 +150,10 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
     (async () => {
       setLoadingCommunes(true);
       try {
-        const res = await axiosInstance.get('/feicom/api/communes/');
-        const opts = (Array.isArray(res.data) ? res.data : (res.data?.results ?? []))
-          .map(it => ({ value: it.id, label: `${it.id} - ${it.nom}` }));
+        const res = await axiosInstance.get("/feicom/api/communes/");
+        const opts = (
+          Array.isArray(res.data) ? res.data : res.data?.results ?? []
+        ).map((it) => ({ value: it.id, label: `${it.id} - ${it.nom}` }));
         setCommuneOptions(opts);
       } finally {
         setLoadingCommunes(false);
@@ -145,9 +165,10 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
     (async () => {
       setLoadingExercice(true);
       try {
-        const res = await axiosInstance.get('/feicom/api/exercices/');
-        const opts = (Array.isArray(res.data) ? res.data : (res.data?.results ?? []))
-          .map(it => ({ value: it.id, label: `${it.id} - ${it.annee}` }));
+        const res = await axiosInstance.get("/feicom/api/exercices/");
+        const opts = (
+          Array.isArray(res.data) ? res.data : res.data?.results ?? []
+        ).map((it) => ({ value: it.id, label: `${it.id} - ${it.annee}` }));
         setExerciceOptions(opts);
       } finally {
         setLoadingExercice(false);
@@ -155,15 +176,19 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
     })();
   }, []);
 
-
-
-
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({
-      libelle, duree, montant_ht, type,
-      numero_convention, date_debut, date_fin,
-      entreprise, commune, exercice
+      libelle,
+      duree,
+      montant_ht,
+      type,
+      numero_convention,
+      date_debut,
+      date_fin,
+      entreprise,
+      commune,
+      exercice,
     });
   };
 
@@ -172,20 +197,42 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
       <div className="row g-2">
         <div className="col-md-6">
           <Label>Libellé</Label>
-          <input className="form-control" value={libelle} onChange={e => setLibelle(e.target.value)} required />
+          <input
+            className="form-control"
+            value={libelle}
+            onChange={(e) => setLibelle(e.target.value)}
+            required
+          />
         </div>
         <div className="col-md-3">
           <Label>Durée</Label>
-          <input className="form-control" type="number" value={duree} onChange={e => setDuree(e.target.value)} required />
+          <input
+            className="form-control"
+            type="number"
+            value={duree}
+            onChange={(e) => setDuree(e.target.value)}
+            required
+          />
         </div>
         <div className="col-md-3">
           <Label>Montant HT</Label>
-          <input className="form-control" type="number" value={montant_ht} onChange={e => setMontantHt(e.target.value)} required />
+          <input
+            className="form-control"
+            type="number"
+            value={montant_ht}
+            onChange={(e) => setMontantHt(e.target.value)}
+            required
+          />
         </div>
 
         <div className="col-md-4">
           <Label>Type</Label>
-          <select className="form-control" value={type} onChange={e => setType(e.target.value)} required>
+          <select
+            className="form-control"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            required
+          >
             <option value="">Sélectionnez un type</option>
             <option value="INFRA">INFRA</option>
             <option value="ETUDE">ETUDE</option>
@@ -193,15 +240,32 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
         </div>
         <div className="col-md-4">
           <Label>Numéro de convention</Label>
-          <input className="form-control" value={numero_convention} onChange={e => setNumeroConvention(e.target.value)} required />
+          <input
+            className="form-control"
+            value={numero_convention}
+            onChange={(e) => setNumeroConvention(e.target.value)}
+            required
+          />
         </div>
         <div className="col-md-2">
           <Label>Date de début</Label>
-          <input className="form-control" type="date" value={date_debut} onChange={e => setDateDebut(e.target.value)} required />
+          <input
+            className="form-control"
+            type="date"
+            value={date_debut}
+            onChange={(e) => setDateDebut(e.target.value)}
+            required
+          />
         </div>
         <div className="col-md-2">
           <Label>Date de fin</Label>
-          <input className="form-control" type="date" value={date_fin} onChange={e => setDateFin(e.target.value)} required />
+          <input
+            className="form-control"
+            type="date"
+            value={date_fin}
+            onChange={(e) => setDateFin(e.target.value)}
+            required
+          />
         </div>
 
         <div className="col-md-4">
@@ -209,13 +273,15 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
           <select
             className="form-control"
             value={entreprise}
-            onChange={e => setEntreprise(Number(e.target.value))}
+            onChange={(e) => setEntreprise(Number(e.target.value))}
             required
             disabled={loadingEntreprises}
           >
             <option value="">Sélectionnez une entreprise</option>
-            {entrepriseOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {entrepriseOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>
@@ -225,13 +291,15 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
           <select
             className="form-control"
             value={commune}
-            onChange={e => setCommune(Number(e.target.value))}
+            onChange={(e) => setCommune(Number(e.target.value))}
             required
             disabled={loadingCommunes}
           >
             <option value="">Sélectionnez une commune</option>
-            {communeOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {communeOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>
@@ -241,22 +309,28 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
           <select
             className="form-control"
             value={exercice}
-            onChange={e => setExercice(Number(e.target.value))}
+            onChange={(e) => setExercice(Number(e.target.value))}
             required
             disabled={loadingExercice}
           >
             <option value="">Sélectionnez un exercice</option>
             {exerciceOptions.map ? null : null}
-            {exerciceOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {exerciceOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>
       </div>
 
       <div className="d-flex gap-2 mt-3">
-        <Btn attrBtn={{ color: 'secondary', type: 'button', onClick: onCancel }}>Annuler</Btn>
-        <Btn attrBtn={{ color: 'primary', type: 'submit' }}>Valider</Btn>
+        <Btn
+          attrBtn={{ color: "secondary", type: "button", onClick: onCancel }}
+        >
+          Annuler
+        </Btn>
+        <Btn attrBtn={{ color: "primary", type: "submit" }}>Valider</Btn>
       </div>
     </form>
   );
@@ -265,12 +339,14 @@ const ProjetForm = ({ initialData = {}, onSave, onCancel }) => {
 
 const DeleteConfirm = ({ noms, onConfirm, onCancel }) => (
   <div>
-    <p>Voulez-vous vraiment supprimer {noms.length > 1 ? "les projets suivants" : "ce projet"} ?<br />
-      <strong>{noms.join(', ')}</strong>
+    <p>
+      Voulez-vous vraiment supprimer{" "}
+      {noms.length > 1 ? "les projets suivants" : "ce projet"} ?<br />
+      <strong>{noms.join(", ")}</strong>
     </p>
     <div className="d-flex gap-2">
-      <Btn attrBtn={{ color: 'secondary', onClick: onCancel }}>Annuler</Btn>
-      <Btn attrBtn={{ color: 'danger', onClick: onConfirm }}>Supprimer</Btn>
+      <Btn attrBtn={{ color: "secondary", onClick: onCancel }}>Annuler</Btn>
+      <Btn attrBtn={{ color: "danger", onClick: onConfirm }}>Supprimer</Btn>
     </div>
   </div>
 );
@@ -286,16 +362,16 @@ const ProjetTable = () => {
   // filters
   const [exerciceOptions, setExerciceOptions] = useState([]);
   const [communeOptions, setCommuneOptions] = useState([]);
-  const [filters, setFilters] = useState({ exercice: '', commune: '' });
+  const [filters, setFilters] = useState({ exercice: "", commune: "" });
 
   // search
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
 
   // selection / modal
   const [selectedRows, setSelectedRows] = useState([]);
   const [toggleDelet, setToggleDelet] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState('');
+  const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState(null);
 
   // load options
@@ -303,17 +379,19 @@ const ProjetTable = () => {
     (async () => {
       try {
         const [exRes, comRes] = await Promise.all([
-          axiosInstance.get('/feicom/api/exercices/'),
-          axiosInstance.get('/feicom/api/communes/'),
+          axiosInstance.get("/feicom/api/exercices/"),
+          axiosInstance.get("/feicom/api/communes/"),
         ]);
-        const exOpts = (Array.isArray(exRes.data) ? exRes.data : (exRes.data?.results ?? []))
-          .map(e => ({ value: e.id, label: String(e.annee) }));
-        const comOpts = (Array.isArray(comRes.data) ? comRes.data : (comRes.data?.results ?? []))
-          .map(c => ({ value: c.id, label: c.nom }));
+        const exOpts = (
+          Array.isArray(exRes.data) ? exRes.data : exRes.data?.results ?? []
+        ).map((e) => ({ value: e.id, label: String(e.annee) }));
+        const comOpts = (
+          Array.isArray(comRes.data) ? comRes.data : comRes.data?.results ?? []
+        ).map((c) => ({ value: c.id, label: c.nom }));
         setExerciceOptions(exOpts);
         setCommuneOptions(comOpts);
       } catch (e) {
-        console.error('Erreur chargement options', e);
+        console.error("Erreur chargement options", e);
       }
     })();
   }, []);
@@ -323,42 +401,58 @@ const ProjetTable = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axiosInstance.get('/feicom/api/projets/');
-      const list = Array.isArray(res.data) ? res.data : (res.data?.results ?? []);
+      const res = await axiosInstance.get("/feicom/api/projets/");
+      const list = Array.isArray(res.data) ? res.data : res.data?.results ?? [];
       setData(list);
     } catch (e) {
-      setError('Erreur lors de la récupération des projets : ' + (e?.message || ''));
+      setError(
+        "Erreur lors de la récupération des projets : " + (e?.message || "")
+      );
     } finally {
       setLoading(false);
     }
   };
-  
 
-  useEffect(() => { fetchProjets(); }, []);
+  useEffect(() => {
+    fetchProjets();
+  }, []);
 
   // filtered
   const filteredData = useMemo(() => {
     let out = Array.isArray(data) ? data : [];
     if (filters.exercice) {
-      out = out.filter(r => (typeof r.exercice === 'object' ? r.exercice?.id : r.exercice) === filters.exercice);
+      out = out.filter(
+        (r) =>
+          (typeof r.exercice === "object" ? r.exercice?.id : r.exercice) ===
+          filters.exercice
+      );
     }
-    if (filters.commune !== '') {
-      out = out.filter(r => (typeof r.commune === 'object' ? r.commune?.id : r.commune) === filters.commune);
+    if (filters.commune !== "") {
+      out = out.filter(
+        (r) =>
+          (typeof r.commune === "object" ? r.commune?.id : r.commune) ===
+          filters.commune
+      );
     }
     if (searchText.trim()) {
       const q = searchText.toLowerCase();
-      out = out.filter(r => Object.values(r || {}).join(' ').toLowerCase().includes(q));
+      out = out.filter((r) =>
+        Object.values(r || {})
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
+      );
     }
     return out;
   }, [data, filters, searchText]);
 
   // CRUD
   const handleAdd = () => {
-    setModalTitle('Ajouter un projet');
+    setModalTitle("Ajouter un projet");
     setModalContent(
       <ProjetForm
         onSave={async (payload) => {
-          await axiosInstance.post('/feicom/api/projets/', payload);
+          await axiosInstance.post("/feicom/api/projets/", payload);
           setModalOpen(false);
           fetchProjets();
         }}
@@ -369,7 +463,7 @@ const ProjetTable = () => {
   };
 
   const handleEdit = (row) => {
-    setModalTitle('Modifier le projet');
+    setModalTitle("Modifier le projet");
     setModalContent(
       <ProjetForm
         initialData={row}
@@ -385,7 +479,7 @@ const ProjetTable = () => {
   };
 
   const handleDeleteSingle = (row) => {
-    setModalTitle('Suppression du projet');
+    setModalTitle("Suppression du projet");
     setModalContent(
       <DeleteConfirm
         noms={[row.libelle]}
@@ -401,13 +495,17 @@ const ProjetTable = () => {
   };
 
   const handleDeleteMany = () => {
-    setModalTitle('Suppression de plusieurs projets');
+    setModalTitle("Suppression de plusieurs projets");
     setModalContent(
       <DeleteConfirm
-        noms={selectedRows.map(r => r.libelle)}
+        noms={selectedRows.map((r) => r.libelle)}
         onConfirm={async () => {
-          await Promise.all(selectedRows.map(r => axiosInstance.delete(`/feicom/api/projets/${r.id}/`)));
-          setToggleDelet(v => !v);
+          await Promise.all(
+            selectedRows.map((r) =>
+              axiosInstance.delete(`/feicom/api/projets/${r.id}/`)
+            )
+          );
+          setToggleDelet((v) => !v);
           setModalOpen(false);
           fetchProjets();
         }}
@@ -417,25 +515,25 @@ const ProjetTable = () => {
     setModalOpen(true);
   };
 
-    // Par défaut : sélectionner l'exercice = année courante si présent dans la liste
-    useEffect(() => {
-      if (!exerciceOptions?.length) return;                      // rien à faire si pas encore chargé
-      if (filters.exercice !== '' && filters.exercice != null) return; // ne pas écraser un choix existant
-  
-      const currentYear = String(new Date().getFullYear());
-      const match = exerciceOptions.find(o => String(o.label) === currentYear);
-  
-      if (match) {
-        setFilters(f => ({ ...f, exercice: Number(match.value) }));
-      } 
-      // (optionnel) fallback : si l'année courante n'existe pas, prendre la plus récente
-      // else {
-      //   const latest = exerciceOptions.reduce((a, b) => (+b.label > +a.label ? b : a), exerciceOptions[0]);
-      //   if (latest) setFilters(f => ({ ...f, exercice: Number(latest.value) }));
-      // }
-    }, [exerciceOptions, filters.exercice, setFilters]);
+  // Par défaut : sélectionner l'exercice = année courante si présent dans la liste
+  useEffect(() => {
+    if (!exerciceOptions?.length) return; // rien à faire si pas encore chargé
+    if (filters.exercice !== "" && filters.exercice != null) return; // ne pas écraser un choix existant
 
-      // Helpers affichage % (convertir string -> nombre sûr)
+    const currentYear = String(new Date().getFullYear());
+    const match = exerciceOptions.find((o) => String(o.label) === currentYear);
+
+    if (match) {
+      setFilters((f) => ({ ...f, exercice: Number(match.value) }));
+    }
+    // (optionnel) fallback : si l'année courante n'existe pas, prendre la plus récente
+    // else {
+    //   const latest = exerciceOptions.reduce((a, b) => (+b.label > +a.label ? b : a), exerciceOptions[0]);
+    //   if (latest) setFilters(f => ({ ...f, exercice: Number(latest.value) }));
+    // }
+  }, [exerciceOptions, filters.exercice, setFilters]);
+
+  // Helpers affichage % (convertir string -> nombre sûr)
   const toPct = (v) => {
     const n = Number(v);
     return Number.isFinite(n) ? Math.min(Math.max(n, 0), 100) : 0;
@@ -443,74 +541,134 @@ const ProjetTable = () => {
 
   // columns
   const columns = [
-    { name: 'Libellé', selector: r => r.libelle, sortable: true, wrap: true },
-    { name: 'Durée', selector: r => r.duree, sortable: true },
-    { name: 'Montant HT', selector: r => r.montant_ht, sortable: true },
-    { name: 'Date début', selector: r => r.date_debut, sortable: true, cell: (row) => dayjs(row.date_debut).format('dddd, DD MMMM YYYY') },
-    { name: 'Date fin', selector: r => r.date_fin, sortable: true, cell: (row) => dayjs(row.date_fin).format('dddd, DD MMMM YYYY') },
-    { name: 'Agence', selector: r => r.commune.departement.agence.nom, sortable: true },
-    { name: 'Entreprise', selector: r => r.entreprise.nom, sortable: true },
-    { name: 'Commune', selector: r => (typeof r.commune === 'object' ? r.commune?.nom : r.commune), sortable: true },
-    { name: 'Exercice', selector: r => (typeof r.exercice === 'object' ? r.exercice?.annee : r.exercice), sortable: true },
-    { name: 'Financement', 
-      selector: r => r.payment_percent, 
-      sortable: true ,
+    {
+      name: "Libellé",
+      selector: (r) => r.libelle,
+      sortable: true,
+      wrap: true,
+      minWidth: "300px",
+      grow: 2,
+    },
+    {
+      name: "Durée",
+      selector: (r) => r.duree,
+      sortable: true,
+      center: true,
+      width: "100px",
+      grow: 0,
+      center: true,
+    },
+    {
+      name: "Montant HT",
+      selector: (r) => r.montant_ht,
+      sortable: true,
+      width: "150px",
+      grow: 0,
+      cell: (r) =>
+        new Intl.NumberFormat("fr-CM", {
+          style: "currency",
+          currency: "XAF",
+        }).format(r.montant_ht),
+    },
+    {
+      name: "Date début",
+      selector: (r) => r.date_debut,
+      sortable: true,
+      cell: (row) => dayjs(row.date_debut).format("dddd, DD MMMM YYYY"),
+    },
+    {
+      name: "Date fin",
+      selector: (r) => r.date_fin,
+      sortable: true,
+      cell: (row) => dayjs(row.date_fin).format("dddd, DD MMMM YYYY"),
+    },
+    {
+      name: "Agence",
+      selector: (r) => r.commune.departement.agence.nom,
+      sortable: true,
+    },
+    { name: "Entreprise", selector: (r) => r.entreprise.nom, sortable: true },
+    // { name: 'Commune', selector: r => (typeof r.commune === 'object' ? r.commune?.nom : r.commune), sortable: true, center: true },
+    // { name: 'Exercice', selector: r => (typeof r.exercice === 'object' ? r.exercice?.annee : r.exercice), sortable: true },
+    {
+      name: "Financement",
+      selector: (r) => r.payment_percent,
+      sortable: true,
       // on ajoute un percentage bar
-      cell: row => {
+      cell: (row) => {
         const val = row.payment_percent;
         return (
-          <div className="progress" style={{ height: 20, minWidth: 120 }}>
-            <div
-              className="progress-bar"
-              role="progressbar"
-              style={{ width: `${val}%` }}
-              aria-valuenow={val}
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              {val}%
+          <div className="progress-showcase" style={{ width: "86px" }}>
+            <div className="progress sm-progress-bar">
+              <div
+                className="progress-bar custom-progress-width bg-primary"
+                style={{ width:`${val}%` }}
+                role="progressbar"
+              ></div>
             </div>
           </div>
-        )
-      }
+        );
+      },
     },
-    { name: 'Avancement', 
-      selector: r => r.Progress, 
+    {
+      name: "Avancement",
+      selector: (r) => r.Progress,
       sortable: true,
-      cell: row => {
+      cell: (row) => {
         const val = row.Progress;
         return (
-          <div className="progress" style={{ height: 20, minWidth: 120 }}>
-            <div
-              className="progress-bar"
-              role="progressbar"
-              style={{ width: `${val}%` }}
-              aria-valuenow={val}
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              {val}%
+          <div className="progress-showcase" style={{ width: "86px" }}>
+            <div className="progress sm-progress-bar">
+              <div
+                className="progress-bar custom-progress-width bg-secondary"
+                style={{ width:`${val}%` }}
+                role="progressbar"
+              ></div>
             </div>
           </div>
-        )
-      }
-     },
+        );
+      },
+    },
     {
-      name: 'Actions',
-      cell: row => (
+      name: "Actions",
+      cell: (row) => (
         <div className="d-flex gap-1">
-          <Btn attrBtn={{ color: 'primary', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => handleEdit(row) }}>
+          <Btn
+            attrBtn={{
+              color: "primary",
+              size: "sm",
+              className: "btn-sm py-1 px-2",
+              onClick: () => handleEdit(row),
+            }}
+          >
             <i className="fa fa-edit" />
           </Btn>
-          <Btn attrBtn={{ color: 'info', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => navigate(`${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/${row.id}/detail`) }}>
+          <Btn
+            attrBtn={{
+              color: "info",
+              size: "sm",
+              className: "btn-sm py-1 px-2",
+              onClick: () =>
+                navigate(
+                  `${process.env.PUBLIC_URL}/pages/FeicomPages/ProjectPage/SingleProject/${row.id}/detail`
+                ),
+            }}
+          >
             <i className="fa fa-eye" />
           </Btn>
-          <Btn attrBtn={{ color: 'danger', size: 'sm', className: 'btn-sm py-1 px-2', onClick: () => handleDeleteSingle(row) }}>
+          <Btn
+            attrBtn={{
+              color: "danger",
+              size: "sm",
+              className: "btn-sm py-1 px-2",
+              onClick: () => handleDeleteSingle(row),
+            }}
+          >
             <i className="fa fa-trash" />
           </Btn>
         </div>
       ),
-      width: '150px',
+      width: "150px",
       ignoreRowClick: true,
       button: true,
     },
@@ -519,7 +677,9 @@ const ProjetTable = () => {
   return (
     <Fragment>
       <div className="d-flex justify-end m-3">
-        <Btn attrBtn={{ color: 'primary', onClick: handleAdd }}>Add Project</Btn>
+        <Btn attrBtn={{ color: "primary", onClick: handleAdd }}>
+          Add Project
+        </Btn>
       </div>
 
       {/* Filtres */}
@@ -529,14 +689,20 @@ const ProjetTable = () => {
           className="form-select"
           style={{ maxWidth: 260 }}
           value={filters.exercice}
-          onChange={e => setFilters(f => ({ ...f, exercice: e.target.value ? Number(e.target.value) : '' }))}
+          onChange={(e) =>
+            setFilters((f) => ({
+              ...f,
+              exercice: e.target.value ? Number(e.target.value) : "",
+            }))
+          }
         >
           <option value="">-- Tous les exercices --</option>
-          {exerciceOptions.map(o => (
-            <option key={o.value} value={o.value}>{o.label}</option>
+          {exerciceOptions.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
           ))}
         </select>
-
 
         {/* Commune avec recherche */}
         <div style={{ width: 320 }}>
@@ -548,7 +714,12 @@ const ProjetTable = () => {
             <CommuneSelect
               options={communeOptions}
               value={filters.commune}
-              onChange={(v) => setFilters(f => ({ ...f, commune: v === '' ? '' : Number(v) }))}
+              onChange={(v) =>
+                setFilters((f) => ({
+                  ...f,
+                  commune: v === "" ? "" : Number(v),
+                }))
+              }
               placeholder="-- Toutes les communes --"
             />
           )}
@@ -561,7 +732,7 @@ const ProjetTable = () => {
           style={{ minWidth: 260 }}
           placeholder="Recherche…"
           value={searchText}
-          onChange={e => setSearchText(e.target.value)}
+          onChange={(e) => setSearchText(e.target.value)}
         />
       </div>
 
@@ -570,8 +741,12 @@ const ProjetTable = () => {
       {/* Alerte suppression multiple */}
       {selectedRows.length > 0 && (
         <div className="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
-          <div className="text-muted">Sélection : {selectedRows.length} projet(s)</div>
-          <Btn attrBtn={{ color: 'danger', onClick: handleDeleteMany }}>Supprimer la sélection</Btn>
+          <div className="text-muted">
+            Sélection : {selectedRows.length} projet(s)
+          </div>
+          <Btn attrBtn={{ color: "danger", onClick: handleDeleteMany }}>
+            Supprimer la sélection
+          </Btn>
         </div>
       )}
 
@@ -588,7 +763,11 @@ const ProjetTable = () => {
         noDataComponent="Aucune donnée"
       />
 
-      <CommonModal isOpen={modalOpen} title={modalTitle} toggler={() => setModalOpen(false)}>
+      <CommonModal
+        isOpen={modalOpen}
+        title={modalTitle}
+        toggler={() => setModalOpen(false)}
+      >
         {modalContent}
       </CommonModal>
     </Fragment>

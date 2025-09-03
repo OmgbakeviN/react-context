@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { Breadcrumbs, Btn } from "../../../../AbstractElements";
-import { useParams } from 'react-router-dom'; 
+import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../api/axios";
 import {
   Container,
@@ -36,21 +36,20 @@ import HeaderCard from "../../../Common/Component/HeaderCard";
 import DataTableComponent from "../../../Tables/DataTable/DataTableComponent";
 import CommonModal from "../../../UiKits/Modals/common/modal";
 import ProjectVisitForm from "./ProjectVisitForm";
-import DataTable from 'react-data-table-component';
-import { useNavigate } from 'react-router-dom';
-import dayjs from 'dayjs';
-import 'dayjs/locale/fr';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
-import Rapport from '../Rapport';
+import DataTable from "react-data-table-component";
+import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
+import "dayjs/locale/fr";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import Rapport from "../Rapport";
 
 //on vas importer un modal de reactstrap
 import { Modal, ModalHeader, ModalBody } from "react-bootstrap";
 
-dayjs.locale('fr');
+dayjs.locale("fr");
 dayjs.extend(localizedFormat);
 
 const SingleProject = () => {
-  
   //on definit usenavigate
   const navigate = useNavigate();
 
@@ -58,11 +57,11 @@ const SingleProject = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [visites, setVisites] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // on charge les project detail avec useeffect
-  useEffect(() =>{
+  useEffect(() => {
     let cancelled = false;
 
     const fetchProject = async () => {
@@ -73,7 +72,10 @@ const SingleProject = () => {
         if (!cancelled) setProject(response.data);
       } catch (err) {
         if (!cancelled) {
-          setError(err?.response?.data?.detail || "Une erreur est survenue lors du chargement du projet.");
+          setError(
+            err?.response?.data?.detail ||
+              "Une erreur est survenue lors du chargement du projet."
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -81,11 +83,12 @@ const SingleProject = () => {
     };
 
     if (id) fetchProject();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-
-  console.log(project)
+  console.log(project);
 
   // // on charge les visites d'un projet
   // useEffect(() =>{
@@ -102,14 +105,14 @@ const SingleProject = () => {
   //         setLoading(false);
   //       }
   //     };
-  
+
   //   if (id){
   //     fetchVisites();
   //   }
   // }, [id]);
 
   // console.log(visites)
-  
+
   const [active, setActive] = useState("visites"); // onglet par défaut plus “vivant”
 
   // Manege the modal
@@ -119,13 +122,20 @@ const SingleProject = () => {
   const [modal2Open, setModal2Open] = useState(false);
 
   const handleAddModal = () => {
-    setModalTitle(<div className="fw-semibold text-wrap"> Fiche de Visite – PCCM / FEICOM    </div>);
+    setModalTitle(
+      <div className="fw-semibold text-wrap">
+        {" "}
+        Fiche de Visite – PCCM / FEICOM{" "}
+      </div>
+    );
     setModalContent(<div> Test</div>);
     setModalOpen(true);
   };
 
   const handlevisitesModal = () => {
-    setModalTitle(<div className="fw-semibold text-wrap"> Visite – PCCM / FEICOM    </div>);
+    setModalTitle(
+      <div className="fw-semibold text-wrap"> Visite – PCCM / FEICOM </div>
+    );
     setModalContent(<div> Test</div>);
     setModal2Open(true);
   };
@@ -138,58 +148,61 @@ const SingleProject = () => {
     {
       name: "Date",
       selector: (row) => row.date,
-      sortable: true,
-      cell: (row) => dayjs(row.date).format('dddd, DD MMMM YYYY'),
+      cell: (row) => dayjs(row.date).format("dddd, DD MMMM YYYY"),
+      minWidth: "200px",
     },
-    { // entreprise_present is boolean it is either true or false
-      name: "entreprise present",
+    {
+      // entreprise_present is boolean it is either true or false
+      name: "Entreprise",
       selector: (row) => row.enterprise_present,
-      sortable: true,
-      cell: row => {
+      cell: (row) => {
         // conditional rendering base on bollean value
         return row.enterprise_present ? (
           <Badge color="success">Present</Badge>
         ) : (
           <Badge color="danger">Absent</Badge>
-        )
-      }
-    }, 
-    { // moe_present is boolean it is either true or false
-      name: "Moe_present",
+        );
+      },
+      center: true,
+    },
+    {
+      // moe_present is boolean it is either true or false
+      name: "M_O",
       selector: (row) => row.moe_present,
-      sortable: true,
-      cell: row => {
+      cell: (row) => {
         // conditional rendering base on bollean value
         return row.moe_present ? (
           <Badge color="success">Present</Badge>
         ) : (
           <Badge color="danger">Absent</Badge>
-        )
-      }
+        );
+      },
+            center: true,
+
     },
     {
-      name: 'Actions',
-      cell: row => (
+      name: "Actions",
+      cell: (row) => (
         <div className="d-flex gap-1">
           <Btn
-          attrBtn={{
-            color: 'info',
-            size: 'sm',
-            className: 'btn-sm py-1 px-2',
-            onClick: () => {
-              handlevisitesModal();
-              setVisit(row);
-            }
-          }}
+            attrBtn={{
+              color: "info",
+              size: "sm",
+              className: "btn-sm py-1 px-2",
+              onClick: () => {
+                handlevisitesModal();
+                setVisit(row);
+              },
+            }}
           >
             <i className="fa fa-eye" />
           </Btn>
         </div>
       ),
-      width: '150px',
+      width: "150px",
       ignoreRowClick: true,
       button: true,
-    },  
+    },
   ];
 
   // // on appelle le project id avec axios nstance
@@ -283,8 +296,8 @@ const SingleProject = () => {
   const money = (n) =>
     (n ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " FCFA";
 
-  if(!project) {
-    return <p>Chargement ...</p>
+  if (!project) {
+    return <p>Chargement ...</p>;
   }
 
   return (
@@ -302,7 +315,9 @@ const SingleProject = () => {
                       <div>
                         <h2 className="mb-1">{project.libelle}</h2>
                         <div className="text-muted">
-                          {project.commune.departement.agence.nom} • {project.commune.departement.nom} • {project.commune.nom}
+                          {project.commune.departement.agence.nom} •{" "}
+                          {project.commune.departement.nom} •{" "}
+                          {project.commune.nom}
                         </div>
                       </div>
                       <div className="d-flex align-items-center gap-2">
@@ -328,7 +343,9 @@ const SingleProject = () => {
                         >
                           <CardBody>
                             <div className="fw-bold mb-1">Montant TTC</div>
-                            <div className="fs-4">{money(project.montant_ht)}</div>
+                            <div className="fs-4">
+                              {money(project.montant_ht)}
+                            </div>
                           </CardBody>
                         </Card>
                       </Col>
@@ -747,8 +764,7 @@ const SingleProject = () => {
                                   pagination
                                   progressPending={loading}
                                   noDataComponent="NAN"
-                                /> 
-                                
+                                />
                               </CardBody>
                             </Card>
                             {/* <Container fluid={true}>
@@ -897,10 +913,20 @@ const SingleProject = () => {
         </Row>
       </Container>
 
-      <CommonModal isOpen={modalOpen} title={modalTitle} toggler={() => setModalOpen(false)} size="lg">
+      <CommonModal
+        isOpen={modalOpen}
+        title={modalTitle}
+        toggler={() => setModalOpen(false)}
+        size="lg"
+      >
         <ProjectVisitForm onSubmit={(data) => console.log(data)} />
       </CommonModal>
-      <CommonModal isOpen={modal2Open} title={modalTitle} toggler={() => setModal2Open(false)} size="lg">
+      <CommonModal
+        isOpen={modal2Open}
+        title={modalTitle}
+        toggler={() => setModal2Open(false)}
+        size="lg"
+      >
         {/* on passe project et aussi la visite en props */}
         <Rapport project={project} visit={visit} />
       </CommonModal>
