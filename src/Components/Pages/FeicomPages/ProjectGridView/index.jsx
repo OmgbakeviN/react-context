@@ -2,20 +2,19 @@ import React, { Fragment, useContext, useEffect, useMemo, useState, useRef, useC
 import { useNavigate } from 'react-router';
 import {
   Container, Row, Col, Card, CardBody, Nav, NavItem, NavLink, TabContent, TabPane,
-  Spinner, Alert, Input, Label
+  Spinner, Alert, Input,
 } from 'reactstrap';
 import { Target, Info, CheckCircle /*, PlusCircle */ } from 'react-feather';
 import { /* Link, */ } from 'react-router-dom';
 import { Done, All, Doing /*, CreateNewProject */ } from '../../../../Constant';
 import { Breadcrumbs } from '../../../../AbstractElements';
 import ProjectContext from '../../../../_helper/Project';
-import CusClass from '../Common/CusClass';
-import CustomizerContext from '../../../../_helper/Customizer';
+// import CusClass from '../Common/CusClass';
+import CusClass from './CusClass';
 import axiosInstance from '../../../../api/axios';
 import FilterBar from './FilterBar';
 
 const Project = () => {
-  const { layoutURL } = useContext(CustomizerContext);
   const { allData }   = useContext(ProjectContext);
 
   const navigate = useNavigate();

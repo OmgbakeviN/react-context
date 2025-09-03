@@ -8,7 +8,7 @@ const CusClass = ({ item }) => {
     <Col className='col-xxl-4' md='6'>
       <div className='project-box'>
         {/* <span className={`badge ${item.badge === 'Done' ? 'badge-success' : 'badge-primary'}`}>{item.badge}</span> */}
-        <H6>Nom de Projet: {item.libelle}</H6>
+        <H6>: {item.libelle}</H6>
         <div className='media'>
           {/* <Image attrImage={{ className: 'img-20 me-1 rounded-circle', src: `${require(`../../../../assets/images/${item.img}`)}`, alt: '' }} /> */}
           <div className='media-body'>

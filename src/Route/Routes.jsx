@@ -91,7 +91,8 @@ import DataTables from "../Components/Tables/DataTable";
 
 // //Application
 import Newproject from "../Components/Application/Project/Newproject";
-import Project from "../Components/Application/Project/Project";
+// import Project from "../Components/Application/Project/Project";
+import Project from "../Components/Pages/FeicomPages/ProjectGridView";
 import Chat from "../Components/Application/Chat/ChatApp";
 import VideoChat from "../Components/Application/Chat/VideoChat";
 

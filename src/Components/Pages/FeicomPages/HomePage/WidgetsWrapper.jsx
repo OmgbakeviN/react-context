@@ -18,23 +18,23 @@ const WidgetsWrapper = () => {
       <Row>
         <Col xs={12}>
           <Row className="g-3">
-            <Col xs={4}>
+            <Col md={6} >
               <Widgets1 data={MyWidgetsData} />
             </Col>
-            <Col xs={4}>
+            <Col md={6}>
               <Widgets1 data={MyWidgetsData2} />
             </Col>
-            <Col xs={4}>
+            <Col md={6}>
               <Widgets1 data={MyWidgetsData3} />
             </Col>
           
-            <Col xs={4}>
+            <Col md={6}>
             <Widgets2 chartClass='profit-chart ' data={Widgets2Data2a} />
           </Col>
-          <Col xs={4}>
+          <Col md={6}>
             <Widgets2 chartClass='profit-chart ' data={Widgets2Data2b} />
           </Col>
-          <Col xs={4}>
+          <Col md={6}>
             <Widgets2 chartClass='profit-chart ' data={Widgets2Data2c} />
           </Col>
           </Row>
