@@ -90,7 +90,9 @@ const RegionalPerformanceCard = ({ regionData }) => {
           </div>
           <div className="d-flex justify-content-between mt-1">
             <span className="text-muted small">Total Disbursed</span>
-            <span className="fw-semibold">{formatCurrency(totalDisbursed)}</span>
+            <span className="fw-semibold">
+              {formatCurrency(totalDisbursed)}
+            </span>
           </div>
         </div>
 
