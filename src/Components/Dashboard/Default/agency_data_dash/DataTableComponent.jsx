@@ -74,7 +74,8 @@ const DataTableComponent = () => {
 
   // filtering search
   const filteredData = data.filter(row => 
-    Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
+    // Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
+    row.nom?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   useEffect(() => {

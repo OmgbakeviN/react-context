@@ -134,7 +134,13 @@ const VisiteTable = () => {
 
   // filtering search
   const filteredData = data.filter(row => 
-    Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
+    // Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
+    row.date?.toLowerCase().includes(searchText.toLowerCase()) ||
+    row.projet.commune.departement.agence.nom?.toLowerCase().includes(searchText.toLowerCase()) ||
+    row.projet.commune.nom?.toLowerCase().includes(searchText.toLowerCase()) ||
+    row.new_record?.toLowerCase().includes(searchText.toLowerCase()) ||
+    row.observation?.toLowerCase().includes(searchText.toLowerCase()) ||
+    row.projet.libelle?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   useEffect(() => {

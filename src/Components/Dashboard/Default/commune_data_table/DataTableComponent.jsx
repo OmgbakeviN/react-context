@@ -108,7 +108,10 @@ const CommuneTable = () => {
 
   // filtering search
   const filteredData = data.filter(row => 
-    Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
+    // Object.values(row).join(' ').toLowerCase().includes(searchText.toLowerCase())
+    row.nom?.toLowerCase().includes(searchText.toLowerCase()) ||
+    row.departement?.nom?.toLowerCase().includes(searchText.toLowerCase()) ||
+    row.departement?.agence?.nom?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   useEffect(() => {

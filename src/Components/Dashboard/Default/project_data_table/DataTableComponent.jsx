@@ -420,29 +420,65 @@ const ProjetTable = () => {
   // filtered
   const filteredData = useMemo(() => {
     let out = Array.isArray(data) ? data : [];
+  
+    // Filtres exacts (id direct ou objet {id})
     if (filters.exercice) {
       out = out.filter(
-        (r) =>
-          (typeof r.exercice === "object" ? r.exercice?.id : r.exercice) ===
-          filters.exercice
+        (r) => (typeof r.exercice === "object" ? r.exercice?.id : r.exercice) === filters.exercice
       );
     }
     if (filters.commune !== "") {
       out = out.filter(
-        (r) =>
-          (typeof r.commune === "object" ? r.commune?.id : r.commune) ===
-          filters.commune
+        (r) => (typeof r.commune === "object" ? r.commune?.id : r.commune) === filters.commune
       );
     }
+  
     if (searchText.trim()) {
-      const q = searchText.toLowerCase();
-      out = out.filter((r) =>
-        Object.values(r || {})
+      const q = searchText.trim().toLowerCase();
+  
+      out = out.filter((r) => {
+        const entrepriseNom = r.entreprise?.nom ?? "";
+        const communeNom = r.commune?.nom ?? "";
+        const departementNom = r.commune?.departement?.nom ?? "";
+        const agenceNom = r.commune?.departement?.agence?.nom ?? "";
+        const exerciceAnnee = r.exercice?.annee ?? "";
+        const exerciceBudget = r.exercice?.budget ?? "";
+  
+        // Construit un “haystack” texte avec les champs pertinents
+        const haystack = [
+          r.libelle,
+          r.type,
+          r.numero_convention,
+          r.date_debut,
+          r.date_fin,
+          r.status,
+          r.montant_ht,
+          r.funding_purpose,
+          r.approving_body,
+          r.contract_ano_date,
+          r.contract_amount,
+          r.start_meeting_date,
+          r.peo_ano_date,
+          r.provisional_acceptance_date ?? "",
+          r.final_acceptance_date ?? "",
+          String(r.progress ?? ""),
+          String(r.payment_percent ?? ""),
+          String(r.time_consumed_percent ?? ""),
+          entrepriseNom,
+          communeNom,
+          departementNom,
+          agenceNom,
+          String(exerciceAnnee),
+          String(exerciceBudget),
+        ]
+          .map((v) => (v == null ? "" : String(v)))
           .join(" ")
-          .toLowerCase()
-          .includes(q)
-      );
+          .toLowerCase();
+  
+        return haystack.includes(q);
+      });
     }
+  
     return out;
   }, [data, filters, searchText]);
 

@@ -120,7 +120,14 @@ const EntrepriseTable = () => {
     const q = searchText?.toLowerCase().trim();
     if (!q) return items;
     return (items || []).filter(row =>
-      Object.values(row || {}).join(' ').toLowerCase().includes(q)
+      // Object.values(row || {}).join(' ').toLowerCase().includes(q)
+      row.nom?.toLowerCase().includes(q) ||
+      row.rcc?.toLowerCase().includes(q) ||
+      row.niu?.toLowerCase().includes(q) ||
+      row.promoteur?.toLowerCase().includes(q) ||
+      row.contact?.toLowerCase().includes(q) ||
+      row.email?.toLowerCase().includes(q) ||
+      row.siege_social?.toLowerCase().includes(q)
     );
   }, [items, searchText]);
 

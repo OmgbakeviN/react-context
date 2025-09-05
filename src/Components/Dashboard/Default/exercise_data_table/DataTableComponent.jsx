@@ -103,13 +103,25 @@ const ExerciceTable = () => {
   }, [dispatch]);
 
   // Recherche
-  const filteredData = useMemo(() => {
-    const q = searchText?.trim().toLowerCase();
-    if (!q) return items || [];
-    return (items || []).filter(row =>
-      Object.values(row || {}).join(' ').toLowerCase().includes(q)
-    );
-  }, [items, searchText]);
+// Recherche (robuste aux nombres / null / undefined)
+const filteredData = useMemo(() => {
+  const q = (searchText ?? '').trim().toLowerCase();
+  if (!q) return items || [];
+
+  const toStr = (v) => (v ?? '').toString().toLowerCase();
+
+  return (items || []).filter((row) => {
+    // Concatène les champs recherchables après normalisation
+    const haystack = [
+      row.annee,
+      row.budget,
+      row.taux_consomme,
+      row.pourcentage_consomme,
+    ].map(toStr).join(' ');
+
+    return haystack.includes(q);
+  });
+}, [items, searchText]);
 
   // CRUD
   const handleAdd = () => {
