@@ -1,7 +1,6 @@
 // MultiStepPCCMVisit.jsx
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
-  Container,
   Row,
   Col,
   Card,
@@ -14,174 +13,82 @@ import {
   Button,
   Progress,
   Alert,
+  Spinner,
 } from "reactstrap";
-import { H3 } from "../../../../AbstractElements";
-import Datepicker from "../../../Forms/FormWidget/DatePicker";
+import axiosInstance from "../../../../api/axios";
 
-export default function ProjectVisitForm({ onSubmit }) {
-  const [step, setStep] = useState(0);
-  const [error, setError] = useState("");
-
-  const [startDate, setstartDate] = useState(new Date());
-  const handleChange = (date) => {
-    setstartDate(date);
-  };
-
-  const [form, setForm] = useState({
-    // --- STEP 1: Administrative & Contract (from the fiche) ---
-    structure: "ARES",
-    region: "EST",
-    departement: "LOM-ET-DJEREM",
-    commune: "DIANG",
-    dateVisite: "",
-    derniereVisite: "",
-    visiteNo: "",
-    accord: "COPIL PCCM",
-    conventionOuiNon: "Oui",
-    conventionNumero: "",
-    dateOctroi: "",
-    dateSignature: "",
-    objet:
-      "PROJET DE CONSTRUCTION DE SIX (06) LOGEMENTS DE TYPE T2 ET T3 DANS LA COMMUNE DE DIANG (PCCM)",
-    montantTTC: "",
-    avenantMontantTTC: "",
-    nombreLots: "01",
-    miseEnOeuvreFinancementPct: "",
-    dureeConventionMois: "",
-    entrepriseTravauxPresence: "Présente",
-    maitriseOeuvrePresence: "Absente",
-
-    // Contrat (Entreprise)
-    entNom: "TROPICAL FOREST MANAGEMENT SARL",
-    entLot: "Pas de Lot",
-    entBP: "14734 YAOUNDE",
-    entTel: "678648009",
-    entMontantTTC: "",
-    entAvenantNo: "",
-    entOSDemarrage: "",
-    entDelaisMois: "07",
-
-    // Contrat (Maîtrise d’Œuvre)
-    moeNom: "",
-    moeLot: "Aucun",
-    moeBP: "",
-    moeTel: "",
-    moeMontantTTC: "",
-    moeAvenantNo: "",
-    moeOSDemarrage: "",
-    moeDelaisMois: "",
-
-    // Documents disponibles (Entreprise)
-    doc_anoContrat_ent: "Non",
-    doc_assuranceTRC_ent: "Oui",
-    doc_cautionBF_ent: "Oui",
-    doc_projetExecution_ent: "Non",
-    doc_programmeAction_ent: "Non",
-
-    // Documents disponibles (MOE)
-    doc_anoContrat_moe: "Non",
-    doc_assuranceTRC_moe: "Non",
-    doc_cautionBF_moe: "Non",
-    doc_projetExecution_moe: "Non",
-    doc_programmeAction_moe: "Non",
-
-    // --- STEP 2: Site status, payments, observations ---
-    avancementPct: "",
-    consommationDelaisPct: "",
-    natureVisite: "Mission de suivi",
-    situationSuiviTransmission: "Aucune Transmission",
-
-    // Paiements (1)
-    decompte1: "Non",
-    avDemar1: "Oui",
-    montant1: "0",
-    avancementFinancier1: "0",
-
-    // Paiements (2)
-    decompte2: "Non",
-    avDemar2: "Non",
-    montant2: "0",
-    avancementFinancier2: "0",
-
-    observationsPaiements: "",
-
-    // Observations & constats (free text gathered from the fiche)
-    observationsConstats: "",
-    // Recommandations
-    recoEntreprise_epi: true,
-    recoEntreprise_tamis: true,
-    recoEntreprise_cadence: true,
-    recoEntreprise_projetExecution: true,
-    recoMaitreOuvrage_docsAdministratifs: true,
-  });
-
-  //on recupere les donnes des nputs dans un json
-  const [formData, setFormData] = useState({
-    "id":  null,
-    "projet": null,
-    "date": null,
-    "old_record": null,
-    "new_record": null,
-    "observation": null,
-    "images": null,
-    "enterprise_present": false,
-    "moe_present": false,
-    "work_status_note": null,
-    "followup_status_note": null,
-    "staff_summary": null,
-    "materials_summary": null,
-    "recommendations": null
-  });
-
+export default function MultiStepPCCMVisit({
+  projects = [],
+  projetId = {},
+  onCreated,
+}) {
+  // --- Étapes & progression ---
   const steps = useMemo(
     () => [
-      { key: "admin", title: "Visit Details" },
-      { key: "site", title: "Observations and recommendations" },
+      { key: "base", title: "Informations & Statuts" },
+      { key: "notes", title: "Observations, Recos & Pièces" },
     ],
     []
   );
-
+  const [step, setStep] = useState(0);
   const progress = Math.round(((step + 1) / steps.length) * 100);
 
-  function update(e) {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+  // --- États UI ---
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // --- Données du formulaire (mappées 1:1 avec l'API) ---
+  const [form, setForm] = useState({
+    // requis
+    projet: projetId ?? "",
+    date: "", // yyyy-mm-dd
+
+    // optionnels
+    last_site_visit_date: "", // yyyy-mm-dd
+    enterprise_present: false,
+    moe_present: false,
+    contract_registered: false,
+    performance_bond_provided: false,
+    caution: "",
+    appreciation: "", // GOOD, VERY_GOOD, FAIRLY_GOOD, PASSABLE, MEDIOCRE, POOR
+    visit_nature: "",
+    recommendations: "",
+    observation: "",
+
+    // fichiers (multipart)
+    new_images: [], // FileList ou Array<File>
+  });
+
+  // Si un projet est fixé via props, on verrouille le champ
+  useEffect(() => {
+    if (projetId) {
+      setForm((prev) => ({ ...prev, projet: projetId }));
+    }
+  }, [projetId]);
+
+  // --- Helpers de mise à jour ---
+  function updateField(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+  function updateBool(e) {
+    const { name, checked } = e.target;
+    setForm((prev) => ({ ...prev, [name]: checked }));
+  }
+  function updateFiles(e) {
+    const files = Array.from(e.target.files || []);
+    setForm((prev) => ({ ...prev, new_images: files }));
   }
 
+  // --- Validation par étape ---
   function validateStep0() {
-    // Minimal required fields for Step 1
-    const req = [
-      //   "structure",
-      //   "region",
-      //   "departement",
-      //   "commune",
-      //   "dateVisite",
-      //   "accord",
-      //   "objet",
-      //   "montantTTC",
-      //   "entNom",
-      //   "entOSDemarrage",
-      //   "entDelaisMois",
-    ];
-    for (const k of req) {
-      if (!String(form[k] || "").trim()) {
-        return `Please complete required field: ${k}`;
-      }
-    }
+    if (!form.date) return "La date de visite est requise.";
+    if (!form.projet) return "Le projet est requis.";
     return "";
   }
-
   function validateStep1() {
-    // Minimal required fields for Step 2
-    const req = ["avancementPct", "consommationDelaisPct", "natureVisite"];
-    for (const k of req) {
-      if (!String(form[k] || "").trim()) {
-        return `Please complete required field: ${k}`;
-      }
-    }
+    // Rien d'obligatoire ici côté API, mais on peut garder une cohérence UX si besoin
     return "";
   }
 
@@ -194,26 +101,85 @@ export default function ProjectVisitForm({ onSubmit }) {
     }
     setStep((s) => Math.min(s + 1, steps.length - 1));
   }
-
   function back() {
     setError("");
     setStep((s) => Math.max(s - 1, 0));
   }
 
-  function submit() {
+  // --- Soumission vers l'API (multipart/form-data) ---
+  async function submit() {
     setError("");
-    const err = validateStep1();
+    setSuccess("");
+    const err = step === 1 ? validateStep1() : "";
     if (err) {
       setError(err);
       return;
     }
-    // Hand over final data
-    if (typeof onSubmit === "function") {
-      onSubmit(form);
-    } else {
-      // fallback: preview in console
-      console.log("PCCM Visit Form Submitted:", form);
-      alert("Form submitted ✅ (check console for data)");
+
+    // Construction du FormData -> chaque champ avec sa clé API exacte
+    const fd = new FormData();
+    fd.append("date", form.date);
+    fd.append("projet", String(form.projet));
+
+    if (form.last_site_visit_date) {
+      fd.append("last_site_visit_date", form.last_site_visit_date);
+    }
+    fd.append("enterprise_present", String(!!form.enterprise_present));
+    fd.append("moe_present", String(!!form.moe_present));
+    fd.append("contract_registered", String(!!form.contract_registered));
+    fd.append(
+      "performance_bond_provided",
+      String(!!form.performance_bond_provided)
+    );
+
+    if (form.caution) fd.append("caution", form.caution);
+    if (form.appreciation) fd.append("appreciation", form.appreciation);
+    if (form.visit_nature) fd.append("visit_nature", form.visit_nature);
+    if (form.recommendations)
+      fd.append("recommendations", form.recommendations);
+    if (form.observation) fd.append("observation", form.observation);
+
+    // Fichiers: même clé répétée "new_images"
+    if (form.new_images && form.new_images.length) {
+      form.new_images.forEach((file) => {
+        fd.append("new_images", file); // DRF gère les champs répétés
+      });
+    }
+
+    try {
+      setLoading(true);
+      const { data } = await axiosInstance.post("/feicom/api/visites/", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setSuccess("Visite créée avec succès.");
+      if (typeof onCreated === "function") onCreated(data);
+
+      // Reset doux (on garde le projet s'il est figé)
+      setForm((prev) => ({
+        ...prev,
+        date: "",
+        last_site_visit_date: "",
+        enterprise_present: false,
+        moe_present: false,
+        contract_registered: false,
+        performance_bond_provided: false,
+        caution: "",
+        appreciation: "",
+        visit_nature: "",
+        recommendations: "",
+        observation: "",
+        new_images: [],
+      }));
+      setStep(0);
+    } catch (e) {
+      // Essaye de remonter un message API utile
+      const msg =
+        e?.response?.data?.detail ||
+        e?.response?.data?.message ||
+        "Échec de la création de la visite.";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -221,52 +187,32 @@ export default function ProjectVisitForm({ onSubmit }) {
     <Col>
       <Card className="shadow-sm">
         <CardHeader className="bg-white">
-          {/* Title + progress */}
-          <Row className="d-flex flex-row gap-2">
-            {/* <Col md="12">
-              <div className="fw-semibold text-wrap">
-                Fiche de Visite – PCCM / FEICOM
-              </div>
-            </Col> */}
-
-            <Col md="12">
-              {/* progress block: full width on xs, shrink on sm+ */}
-              <div className="w-100 w-sm-auto text-sm-end">
-                <small className="text-muted">{progress}%</small>
-                <Progress
-                  value={progress}
-                  className="mt-1"
-                  style={{ height: 6 }}
-                />
-              </div>
+          {/* En-tête + progression */}
+          <Row className="align-items-center">
+            <Col xs="12" className="text-sm-end">
+              <small className="text-muted">{progress}%</small>
+              <Progress value={progress} className="mt-1" style={{ height: 6 }} />
             </Col>
           </Row>
 
-          {/* Steps: horizontal scroll on mobile */}
-          <div className="steps-scroll d-flex flex-nowrap gap-2 mt-3 overflow-auto pe-1">
+          {/* Stepper compact */}
+          <div className="d-flex flex-nowrap gap-2 mt-3 overflow-auto pe-1">
             {steps.map((s, i) => (
-              <div
-                key={s.key}
-                className="d-flex align-items-center flex-shrink-0"
-              >
+              <div key={s.key} className="d-flex align-items-center flex-shrink-0">
                 <div
-                  className={`rounded-circle d-flex align-items-center justify-content-center
-            ${
-              i === step
-                ? "bg-primary text-white"
-                : i < step
-                ? "bg-success text-white"
-                : "bg-light"
-            }`}
+                  className={`rounded-circle d-flex align-items-center justify-content-center ${i === step
+                    ? "bg-primary text-white"
+                    : i < step
+                      ? "bg-success text-white"
+                      : "bg-light"
+                    }`}
                   style={{ width: 36, height: 36, fontWeight: 700 }}
                 >
                   {i + 1}
                 </div>
-                {/* hide labels on xs to save space */}
                 <small
-                  className={`ms-2 d-none d-sm-inline ${
-                    i === step ? "fw-semibold" : ""
-                  }`}
+                  className={`ms-2 d-none d-sm-inline ${i === step ? "fw-semibold" : ""
+                    }`}
                 >
                   {s.title}
                 </small>
@@ -279,286 +225,245 @@ export default function ProjectVisitForm({ onSubmit }) {
               {error}
             </Alert>
           ) : null}
+          {success ? (
+            <Alert color="success" className="mb-0 mt-3">
+              {success}
+            </Alert>
+          ) : null}
         </CardHeader>
 
         <CardBody>
+          {/* ÉTAPE 1 : champs requis + statuts */}
           {step === 0 && (
             <Form>
-              <H3 className="mb-">
-                <strong>A. General Information</strong>{" "}
-              </H3>
+              <h6 className="mb-3">
+                <strong>A. Informations générales</strong>
+              </h6>
+              <Row>
+                {!projetId && (
+                  <Col md="6">
+                    <FormGroup>
+                      <Label>Projet *</Label>
+                      <Input
+                        type="select"
+                        name="projet"
+                        value={form.projet}
+                        onChange={updateField}
+                      >
+                        <option value="">— Sélectionner —</option>
+                        {projects.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.libelle || `Projet #${p.id}`}
+                          </option>
+                        ))}
+                      </Input>
+                    </FormGroup>
+                  </Col>
+                )}
+                <Col md="6">
+                  <FormGroup>
+                    <Label>Date de visite *</Label>
+                    <Input
+                      type="date"
+                      name="date"
+                      value={form.date}
+                      onChange={updateField}
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md="6">
+                  <FormGroup>
+                    <Label>Dernière visite (le cas échéant)</Label>
+                    <Input
+                      type="date"
+                      name="last_site_visit_date"
+                      value={form.last_site_visit_date}
+                      onChange={updateField}
+                    />
+                  </FormGroup>
+                </Col>
+              </Row>
 
+              <h6 className="mt-2 mb-2">
+                <strong>B. Présences & contrats</strong>
+              </h6>
               <Row>
+                <Col md="3">
+                  <FormGroup check>
+                    <Input
+                      id="enterprise_present"
+                      type="checkbox"
+                      name="enterprise_present"
+                      checked={form.enterprise_present}
+                      onChange={updateBool}
+                    />
+                    <Label for="enterprise_present" check>
+                      Entreprise présente ?
+                    </Label>
+                  </FormGroup>
+                </Col>
+                <Col md="3">
+                  <FormGroup check>
+                    <Input
+                      id="moe_present"
+                      type="checkbox"
+                      name="moe_present"
+                      checked={form.moe_present}
+                      onChange={updateBool}
+                    />
+                    <Label for="moe_present" check>
+                      MOE présente ?
+                    </Label>
+                  </FormGroup>
+                </Col>
+                <Col md="3">
+                  <FormGroup check>
+                    <Input
+                      id="contract_registered"
+                      type="checkbox"
+                      name="contract_registered"
+                      checked={form.contract_registered}
+                      onChange={updateBool}
+                    />
+                    <Label for="contract_registered" check>
+                      Contrat enregistré ?
+                    </Label>
+                  </FormGroup>
+                </Col>
+                <Col md="3">
+                  <FormGroup check>
+                    <Input
+                      id="performance_bond_provided"
+                      type="checkbox"
+                      name="performance_bond_provided"
+                      checked={form.performance_bond_provided}
+                      onChange={updateBool}
+                    />
+                    <Label for="performance_bond_provided" check>
+                      Caution de bonne fin fournie ?
+                    </Label>
+                  </FormGroup>
+                </Col>
+              </Row>
+
+              <Row className="mt-2">
                 <Col md="6">
                   <FormGroup>
-                    <Label>Date of Visit</Label>
+                    <Label>Caution (référence / remarque)</Label>
                     <Input
-                      type="date"
-                      name="dateVisite"
-                      value={formData.date}
-                      onChange={update}
+                      name="caution"
+                      value={form.caution}
+                      onChange={updateField}
+                      placeholder="Référence, observations sur la caution…"
                     />
                   </FormGroup>
                 </Col>
                 <Col md="6">
                   <FormGroup>
-                    <Label>Last Visit</Label>
-                    <Input
-                      type="date"
-                      name="derniereVisite"
-                      value={form.derniereVisite}
-                      onChange={update}
-                    />
-                  </FormGroup>
-                </Col>
-              </Row>
-              <Row>
-                <Col md="6">
-                  <FormGroup>
-                    <Label>Entreprise des Travaux</Label>
+                    <Label>Appréciation globale</Label>
                     <Input
                       type="select"
-                      name="entrepriseTravauxPresence"
-                      value={form.entrepriseTravauxPresence}
-                      onChange={update}
+                      name="appreciation"
+                      value={form.appreciation}
+                      onChange={updateField}
                     >
-                      <option>Présente</option>
-                      <option>Absente</option>
-                    </Input>
-                  </FormGroup>
-                </Col>
-                <Col md="6">
-                  <FormGroup>
-                    <Label>Maîtrise d’Œuvre</Label>
-                    <Input
-                      type="select"
-                      name="maitriseOeuvrePresence"
-                      value={form.maitriseOeuvrePresence}
-                      onChange={update}
-                    >
-                      <option>Présente</option>
-                      <option>Absente</option>
+                      <option value="">— Choisir —</option>
+                      <option value="VERY_GOOD">Very good</option>
+                      <option value="GOOD">Good</option>
+                      <option value="FAIRLY_GOOD">Fairly good</option>
+                      <option value="PASSABLE">Passable</option>
+                      <option value="MEDIOCRE">Mediocre</option>
+                      <option value="POOR">Poor</option>
                     </Input>
                   </FormGroup>
                 </Col>
               </Row>
+
               <Row>
                 <Col>
                   <FormGroup>
-                    <Label>Nature of the visit</Label>
+                    <Label>Nature de la visite</Label>
                     <Input
-                      name="natureVisite"
-                      value={form.natureVisite}
-                      onChange={update}
+                      name="visit_nature"
+                      value={form.visit_nature}
+                      onChange={updateField}
+                      placeholder="Ex. Mission de suivi, contrôle qualité, réception partielle…"
                     />
                   </FormGroup>
-                </Col>
-              </Row>
-
-              <h6 className="mt-3 mb-3">
-                <strong>B. Available Documents</strong>
-              </h6>
-              <Row>
-                <Col md="6">
-                  <strong>Company</strong>
-                  <Row className="mt-2">
-                    <Col md="6">
-                      <FormGroup>
-                        <Label>ANO or Contrat</Label>
-                        <Input
-                          type="select"
-                          name="doc_anoContrat_ent"
-                          value={form.doc_anoContrat_ent}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label>Assurance TRC</Label>
-                        <Input
-                          type="select"
-                          name="doc_assuranceTRC_ent"
-                          value={form.doc_assuranceTRC_ent}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label>Caution de BF</Label>
-                        <Input
-                          type="select"
-                          name="doc_cautionBF_ent"
-                          value={form.doc_cautionBF_ent}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label>Projet d’exécution</Label>
-                        <Input
-                          type="select"
-                          name="doc_projetExecution_ent"
-                          value={form.doc_projetExecution_ent}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                    <Col md="12">
-                      <FormGroup>
-                        <Label>Programme d’action</Label>
-                        <Input
-                          type="select"
-                          name="doc_programmeAction_ent"
-                          value={form.doc_programmeAction_ent}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                </Col>
-                <Col md="6">
-                  <strong>Maîtrise d’Œuvre</strong>
-                  <Row className="mt-2">
-                    <Col md="6">
-                      <FormGroup>
-                        <Label>ANO au Contrat</Label>
-                        <Input
-                          type="select"
-                          name="doc_anoContrat_moe"
-                          value={form.doc_anoContrat_moe}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label>Assurance TRC</Label>
-                        <Input
-                          type="select"
-                          name="doc_assuranceTRC_moe"
-                          value={form.doc_assuranceTRC_moe}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label>Caution de BF</Label>
-                        <Input
-                          type="select"
-                          name="doc_cautionBF_moe"
-                          value={form.doc_cautionBF_moe}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                    <Col md="6">
-                      <FormGroup>
-                        <Label>Projet d’exécution</Label>
-                        <Input
-                          type="select"
-                          name="doc_projetExecution_moe"
-                          value={form.doc_projetExecution_moe}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                    <Col md="12">
-                      <FormGroup>
-                        <Label>Programme d’action</Label>
-                        <Input
-                          type="select"
-                          name="doc_programmeAction_moe"
-                          value={form.doc_programmeAction_moe}
-                          onChange={update}
-                        >
-                          <option>Oui</option>
-                          <option>Non</option>
-                        </Input>
-                      </FormGroup>
-                    </Col>
-                  </Row>
                 </Col>
               </Row>
             </Form>
           )}
 
+          {/* ÉTAPE 2 : textes libres + pièces */}
           {step === 1 && (
             <Form>
-              <h6 className="mt-3 mb-2">
-                {" "}
-                <strong>C. Observations & findings (site)</strong>
+              <h6 className="mb-2">
+                <strong>C. Observations & constats</strong>
               </h6>
               <FormGroup>
                 <Input
                   type="textarea"
-                  name="observationsConstats"
-                  value={form.observationsConstats}
-                  onChange={update}
+                  name="observation"
+                  value={form.observation}
+                  onChange={updateField}
                   rows="6"
-                  placeholder="Ex: mobilisation du personnel, matériaux disponibles, écart avancement vs délais, EPI manquants, projet d’exécution non transmis, etc."
+                  placeholder="Ex : mobilisation des équipes, matériaux sur site, écarts délais/avancement, EPI, plans d’exécution, etc."
                 />
               </FormGroup>
-              <FormGroup className="mt-3">
-                <Label>
-                  <h6 className="mt-3 mb-2">
-                    <strong>D. Recommendations</strong>
-                  </h6>
-                </Label>
+
+              <h6 className="mt-3 mb-2">
+                <strong>D. Recommandations</strong>
+              </h6>
+              <FormGroup>
                 <Input
                   type="textarea"
-                  name="observationsPaiements"
-                  value={form.observationsPaiements}
-                  onChange={update}
-                  rows="3"
+                  name="recommendations"
+                  value={form.recommendations}
+                  onChange={updateField}
+                  rows="4"
+                  placeholder="Actions correctives, délais, responsabilités…"
                 />
+              </FormGroup>
+
+              <h6 className="mt-3 mb-2">
+                <strong>E. Pièces jointes (photos)</strong>
+              </h6>
+              <FormGroup>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={updateFiles}
+                />
+                <small className="text-muted d-block mt-1">
+                  Formats image. Sélection multiple autorisée.
+                </small>
               </FormGroup>
             </Form>
           )}
         </CardBody>
       </Card>
 
+      {/* Actions */}
       <div className="d-flex justify-content-between mt-3">
-        <Button color="secondary" outline disabled={step === 0} onClick={back}>
-          Back
+        <Button color="secondary" outline disabled={step === 0 || loading} onClick={back}>
+          Précédent
         </Button>
+
         {step < steps.length - 1 ? (
-          <Button color="primary" onClick={next}>
-            Next
+          <Button color="primary" onClick={next} disabled={loading}>
+            Suivant
           </Button>
         ) : (
-          <Button color="success" onClick={submit}>
-            Submit
+          <Button color="success" onClick={submit} disabled={loading}>
+            {loading ? (
+              <>
+                <Spinner size="sm" />&nbsp;Envoi…
+              </>
+            ) : (
+              "Soumettre"
+            )}
           </Button>
         )}
       </div>

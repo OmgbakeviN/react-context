@@ -14,7 +14,7 @@ import {
 // importing feicom logo
 import logo from './logo.png';
 //on vas imprimer DeepSeekHTML
-import ReactToPrint  from 'react-to-print';
+import ReactToPrint from 'react-to-print';
 import dayjs from 'dayjs';
 import style from './style.css';
 
@@ -58,7 +58,7 @@ const DeepSeekHTML = (props) => {
     <>
       <div className="d-flex justify-content-end my-3">
         <ReactToPrint
-          trigger={() => <button className="btn btn-primary">Print</button>} 
+          trigger={() => <button className="btn btn-primary">Print</button>}
           content={() => componentRef.current}
           documentTitle="Rapport_Visite"
           pageStyle={printStyle}
@@ -67,10 +67,10 @@ const DeepSeekHTML = (props) => {
       </div>
       <div ref={componentRef}>
         <Container className="my-4 p-0" style={{ maxWidth: '960px' }}>
-            <div className="row">
+          <div className="row">
             <header>
               <div style={{ color: "white" }} className="logo">FEICOM</div>
-              <h1 style={{ alignItems: "center" }}>FICHE DE VISITE DE CHANTIER</h1>
+              <h1 style={{ alignItems: "center" }}>Fiche de visite</h1>
               <div className="header-info">
                 <p>Code FI-FPS-02</p>
                 <p>Version: 1</p>
@@ -81,21 +81,21 @@ const DeepSeekHTML = (props) => {
 
             <div className="general-details">
               <div className="location-general">
-                <p>Structure: ARES</p>
-                <p>Date de la visite: 19 oct. 23</p>
-                <p>Dernière visite: 23 août. 23</p>
-                <p>Visite N°: 02</p>
+                <p>Structure: {project.commune.departement.agence.code}</p>
+                <p>Date de la visite: {visit.date}</p>
+                <p>Dernière visite: {visit.last_site_visit_date}</p>
+                <p>Visite N°: {visit.id}</p>
               </div>
 
               <div className="location-details">
-                <p>REGION: EST</p>
-                <p>DEPARTEMENT: LOM-ET-DJEREM</p>
-                <p>COMMUNE: DIANG</p>
+                <p>REGION: NAN</p>
+                <p>DEPARTEMENT: {project.commune.departement.nom}</p>
+                <p>COMMUNE: {project.commune.nom}</p>
               </div>
             </div>
 
             <h4 style={{ color: "#0077b6", alignItems: "center", justifyContent: "center", alignSelf: "center" }}>
-              OBJECT: PROJET DE CONSTRUCTION DE SIX (06) LOGEMENTS DE TYPE T2 ET T3 DANS LA COMMUNE DE DIANG (PCCM)
+              {project.libelle}
             </h4>
 
             <section className="section-title">
@@ -105,20 +105,20 @@ const DeepSeekHTML = (props) => {
             <div className="table-section">
               <div className="row">
                 <p>Accord: COPIL</p>
-                <p>Convention: Oui N° 049/PCCM/FEICOM/DG/CAJ/DCC/2023</p>
-                <p>Date d'octroi: 30 juin. 21</p>
+                <p>Convention: N° {project.numero_convention}</p>
+                <p>Date d'octroi: {project.date_debut}</p>
               </div>
               <div className="row">
                 <p>PCCM</p>
-                <p>Date de signature: 26 avr. 23</p>
+                <p>Date de signature: {project.date_debut}</p>
               </div>
               <div className="row">
-                <p>Montant: 108 420 000 FCFA TTC</p>
+                <p>Montant: {project.montant_ht}</p>
                 <p>Avenant: Montant: Entrez Montant Avenant FCFA TTC</p>
               </div>
               <div className="row">
                 <p>Nombre de lots: 01 Mise en œuvre du financement: %</p>
-                <p>Durée de la Convention: An(s)</p>
+                <p>Durée de la Convention: {project.duree}</p>
               </div>
             </div>
 
@@ -214,25 +214,25 @@ const DeepSeekHTML = (props) => {
                   <p style={{ marginBottom: "15px" }}><b><u>Mise en Œuvre des dernières recommandations</u></b></p>
                   <p style={{ marginBottom: "10px" }}><b><u>Observation et constats</u></b></p>
                   <p>Sur le site, accompagné du Maire, nous avons
-                constaté que l’entreprise s’est mobilisée et les
-                travaux sont en cours, rendus à la fin du chainage
-                  haut pour le bloc de T3 et à la fin des travaux de 
-                  fondation pour les deux blocs de T2. En termes de mobilisation,
-                  19 personnels présents à savoir 01 conducteur des travaux,
+                    constaté que l’entreprise s’est mobilisée et les
+                    travaux sont en cours, rendus à la fin du chainage
+                    haut pour le bloc de T3 et à la fin des travaux de
+                    fondation pour les deux blocs de T2. En termes de mobilisation,
+                    19 personnels présents à savoir 01 conducteur des travaux,
                     03 chefs chantier, 06 maçons, 02 ferrailleurs,
-                  07 manœuvres, s’activaient aux élevations des murs 
-                  de soubassement restants.  S’agissant des matériels
-                  et matériaux, deux tas de sable, un tas de gravier
-                  et une vingtaine de sacs de ciment sont disponibles 
-                  sur le chantier. Le taux d’avancement est de 24,3%
+                    07 manœuvres, s’activaient aux élevations des murs
+                    de soubassement restants.  S’agissant des matériels
+                    et matériaux, deux tas de sable, un tas de gravier
+                    et une vingtaine de sacs de ciment sont disponibles
+                    sur le chantier. Le taux d’avancement est de 24,3%
                     pour une consommation des délais de 52,38%, soit
                     un écart négatif de 28,08% à rattraper absolument.
-                La cadence actuelle des travaux est satisfaisante mais
-                  à maintenir pour pouvoir livrer l’ouvrage dans les délais 
-                contractuels. Cependant, il a été relevé l’absence de tamis
-                pour sable et d’EPI chez certains ouvriers. 
-                Par ailleurs, l’entreprise n’a pas transmis à date le projet 
-                d’exécution des ouvrages.</p>
+                    La cadence actuelle des travaux est satisfaisante mais
+                    à maintenir pour pouvoir livrer l’ouvrage dans les délais
+                    contractuels. Cependant, il a été relevé l’absence de tamis
+                    pour sable et d’EPI chez certains ouvriers.
+                    Par ailleurs, l’entreprise n’a pas transmis à date le projet
+                    d’exécution des ouvrages.</p>
                 </td>
                 <td className="right-column">
                   <p style={{ marginBottom: "20px" }}><b><u>Recomandations</u></b></p>
@@ -243,9 +243,9 @@ const DeepSeekHTML = (props) => {
                     <li>Maintenir la cadence actuelle des travaux ;</li>
                     <li>Transmettre le projet d’exécution ;</li>
                   </ul>
-                  <p><p> A l’endroit du Maître d’ouvrage, il a été recommandé 
-    de transmettre tous les documents administratifs liés au 
-    projet (marché, OS de démarrage, …)</p></p>
+                  <p><p> A l’endroit du Maître d’ouvrage, il a été recommandé
+                    de transmettre tous les documents administratifs liés au
+                    projet (marché, OS de démarrage, …)</p></p>
                 </td>
               </tr>
             </table>
@@ -254,55 +254,40 @@ const DeepSeekHTML = (props) => {
               <span style={{ color: "red" }}>4)</span> Images du Projet
             </h3>
 
-            <div className="images">
-              <div className="img-block">
-                <img src="src/assets/images/glenov-brankovic-e4B5AvA7Jqo-unsplash.jpg" alt="Plaque de chantier" />
-                <p style={{ backgroundColor: "rgb(222, 222, 248)" }}><b>Plaque de chantier</b></p>
-              </div>
-              <div className="img-block">
-                <img src="src/assets/images/glenov-brankovic-e4B5AvA7Jqo-unsplash.jpg" alt="Façade principale du bloc T3" />
-                <p style={{ backgroundColor: "rgb(219, 219, 250)" }}><b>Façade principale du bloc de T3</b></p>
-              </div>
-            </div>
-            <div className="images">
-              <div className="img-block">
-                <img src="src/assets/images/glenov-brankovic-e4B5AvA7Jqo-unsplash.jpg" alt="Plaque de chantier" />
-                <p style={{ backgroundColor: "rgb(222, 222, 248)" }}><b>Bloc de T3.</b></p>
-              </div>
-              <div className="img-block">
-                <img src="src/assets/images/glenov-brankovic-e4B5AvA7Jqo-unsplash.jpg" alt="Façade principale du bloc T3" />
-                <p style={{ backgroundColor: "rgb(219, 219, 250)" }}><b>Travaux de fondation d'un bloc de T2.</b></p>
-              </div>
-
-            </div>
-
-    <div className="images">
-              <div className="img-block">
-                <img src="src/assets/images/glenov-brankovic-e4B5AvA7Jqo-unsplash.jpg" alt="Plaque de chantier" />
-                <p style={{ backgroundColor: "rgb(222, 222, 248)" }}><b>Travaux de fondation d'un bloc de T2.</b></p>
-              </div>
-              <div className="img-block">
-                <img src="src/assets/images/glenov-brankovic-e4B5AvA7Jqo-unsplash.jpg" alt="Façade principale du bloc T3" />
-                <p style={{ backgroundColor: "rgb(219, 219, 250)" }}><b>.Terrassement général</b></p>
-              </div>
-
+            <div className="row g-3 justify-content-center">
+              {visit.new_images.map((image, index) => (
+                <Col key={index} md={6}> 
+                  <div
+                    className="img-block"
+                    style={{
+                      backgroundImage: `url(https://fcom.pythonanywhere.com${image})`,
+                      backgroundSize: 'contain',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'center',
+                      height: '300px',
+                      width: '300px',
+                      borderRadius: '5px',
+                    }}
+                  ></div>
+                </Col>
+              ))}
             </div>
 
           </div>
-          
+
 
 
           <div className="rower">
-              <div className="img-blocked">
-                <p style={{ backgroundColor: "rgb(222, 222, 248)" }}>Appréciation des Travaux</p>
-                <p>Très bien</p>
-              </div>
-              <div className="img-blocked">
-                <p style={{ backgroundColor: "rgb(222, 222, 248)" }}>Appréciation des Travaux</p>
-                <p>M.Mme:</p>
-              </div>
+            <div className="img-blocked">
+              <p style={{ backgroundColor: "rgb(222, 222, 248)" }}>Appréciation des Travaux</p>
+              <p>Très bien</p>
             </div>
-          
+            <div className="img-blocked">
+              <p style={{ backgroundColor: "rgb(222, 222, 248)" }}>Appréciation des Travaux</p>
+              <p>M.Mme:</p>
+            </div>
+          </div>
+
 
           <div className="signatures">
             <p>27-août-25 Visa</p>
@@ -312,7 +297,7 @@ const DeepSeekHTML = (props) => {
               <div className="sign-line">N+2 --------------------------------------</div>
             </div>
           </div>
-          
+
 
           <footer>
             <p style={{ marginLeft: "130px" }}>

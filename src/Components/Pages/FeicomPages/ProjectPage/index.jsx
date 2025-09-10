@@ -42,6 +42,8 @@ import dayjs from "dayjs";
 import "dayjs/locale/fr";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import Rapport from "../Rapport";
+// on importe les lots
+import Lots from "../Todo_lots/lots";
 
 //on vas importer un modal de reactstrap
 import { Modal, ModalHeader, ModalBody } from "react-bootstrap";
@@ -443,6 +445,15 @@ const SingleProject = () => {
                           Pièces jointes
                         </NavLink>
                       </NavItem>
+                      {/* onn ajoute les lots */}
+                      <NavItem>
+                        <NavLink
+                          className={active === "lots" ? "active" : ""}
+                          onClick={() => setActive("lots")}
+                        >
+                          Lots
+                        </NavLink>
+                      </NavItem>
                     </Nav>
                   </CardHeader>
                   <CardBody>
@@ -716,44 +727,6 @@ const SingleProject = () => {
                                 <div className="fw-bold mb-2">
                                   Visit history
                                 </div>
-                                {/* <Table
-                                  responsive
-                                  hover
-                                  className="align-middle"
-                                >
-                                  <thead>
-                                    <tr>
-                                      <th>Date</th>
-                                      <th>Présence</th>
-                                      <th>Avancement</th>
-                                      <th>Délais</th>
-                                      <th>Note</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {project.visites.map((v, i) => (
-                                      <tr key={i}>
-                                        <td>{v.date}</td>
-                                        <td>
-                                          {v.presence_entreprise && (
-                                            <Badge
-                                              color="success"
-                                              className="me-1"
-                                            >
-                                              Entreprise
-                                            </Badge>
-                                          )}
-                                          {v.presence_moe && (
-                                            <Badge color="info">MOE</Badge>
-                                          )}
-                                        </td>
-                                        <td>{v.avancement}%</td>
-                                        <td>{v.delais}%</td>
-                                        <td className="text-muted">{v.note}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </Table> */}
 
                                 {/* on affiche les visites avec react data table */}
                                 <DataTable
@@ -767,18 +740,6 @@ const SingleProject = () => {
                                 />
                               </CardBody>
                             </Card>
-                            {/* <Container fluid={true}>
-                              <Row>
-                                <Col sm="12">
-                                  <Card>
-                                    <HeaderCard title="Select Multiple and Delete Single Data" />
-                                    <CardBody>
-                                      <DataTableComponent />
-                                    </CardBody>
-                                  </Card>
-                                </Col>
-                              </Row>
-                            </Container> */}
                           </Col>
                         </Row>
                       </TabPane>
@@ -807,6 +768,20 @@ const SingleProject = () => {
                                     </ListGroupItem>
                                   ))}
                                 </ListGroup>
+                              </CardBody>
+                            </Card>
+                          </Col>
+                        </Row>
+                      </TabPane>
+
+                      {/* ----- LOTS ----- */}
+                      <TabPane tabId="lots">
+                        <Row className="g-3">
+                          <Col md="12">
+                            <Card>
+                              <CardBody>
+                                {/* on passe project.lots en props */}
+                                <Lots lots={project.lots} />
                               </CardBody>
                             </Card>
                           </Col>
@@ -919,7 +894,8 @@ const SingleProject = () => {
         toggler={() => setModalOpen(false)}
         size="lg"
       >
-        <ProjectVisitForm onSubmit={(data) => console.log(data)} />
+        // on passe le id en props
+        <ProjectVisitForm onSubmit={(data) => console.log(data)}  projetId={id}/>
       </CommonModal>
       <CommonModal
         isOpen={modal2Open}
