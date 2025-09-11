@@ -1,49 +1,41 @@
 // TodosList.js
 import React from 'react';
+import DataTable from 'react-data-table-component';
+
 
 const TodosList = ({ todos }) => {
-    if (!todos || todos.length === 0) {
-        return <p>Aucun todo disponible.</p>;
-    }
-
-    // Styles de base pour la liste
-    const listStyle = {
-        listStyle: 'none',
-        padding: 0,
-        margin: 0,
-        border: '1px solid #ccc',
-        borderRadius: '5px',
-    };
-
-    // Styles pour chaque élément de la liste
-    const listItemStyle = {
-        padding: '10px',
-        borderBottom: '1px solid #eee',
-        backgroundColor: '#f8f9fa',
-        transition: 'background-color 0.2s ease-in-out',
-    };
-
-    // Style pour le statut
-    const statusStyle = {
-        color: 'green',
-        fontWeight: 'bold',
-    };
-
+    const columns = [
+        {
+            name: "Nom",
+            selector: (row) => row.nom,
+            sortable: true,
+        },
+        {
+            name: "Statut",
+            selector: (row) => row.statut,
+            sortable: true,
+            // badges pour STARTED, NOT STARTED ET IN PROGRESS
+            cell: (row) => {
+                if (row.statut === "STARTED") {
+                    return <span className="badge bg-success">Started</span>;
+                } else if (row.statut === "NOT STARTED") {
+                    return <span className="badge bg-danger">Not Started</span>;
+                } else {
+                    return <span className="badge bg-warning">In Progress</span>;
+                }
+            },
+        },
+    ]
+    
     return (
-        <ul style={listStyle}>
-            {todos.map((todo, index) => (
-                <li
-                    key={todo.id}
-                    style={{
-                        ...listItemStyle,
-                        // Supprime la bordure du dernier élément
-                        borderBottom: index === todos.length - 1 ? 'none' : '1px solid #eee',
-                    }}
-                >
-                    <strong>{todo.nom}</strong> - <span style={statusStyle}>Statut : {todo.statut}</span>
-                </li>
-            ))}
-        </ul>
+        <DataTable
+            columns={columns}
+            data={todos}
+            pagination
+            paginationRowsPerPageOptions={[5, 10, 15]}
+            paginationPerPage={5}
+            paginationComponentOptions={{ rowsPerPageText: "Lignes par page" }}
+        />
     );
 };
 

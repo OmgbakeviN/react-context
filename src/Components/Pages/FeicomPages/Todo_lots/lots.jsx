@@ -29,7 +29,7 @@ const Lots = ({ lots }) => {
             </button>
             
             {isOpen && (
-              <div className="p-5 bg-white border-t border-gray-200">
+              <div className="p-1 bg-white border-t border-gray-200">
                 <TodosList todos={lot.todos} />
               </div>
             )}
