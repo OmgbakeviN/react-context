@@ -19,35 +19,36 @@ const Project = () => {
 
   const navigate = useNavigate();
 
-  // Onglets
   const [activeTab, setActiveTab] = useState('1');
 
-  // User
   const [user, setUser] = useState(null);
 
-  // Filtres (FilterBar)
   const [exerciceOptions, setExerciceOptions] = useState([]);
   const [agenceOptions, setAgenceOptions]     = useState([]);
   const [communeOptions, setCommuneOptions]   = useState([]);
   const [filters, setFilters] = useState({ exercice: '', mois: '', agence: '', communes: [] });
   const [loadingFilters, setLoadingFilters] = useState(false);
 
-  // Réseau / données
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
 
-  // Couches de données
-  const [baseData, setBaseData]       = useState([]); // résultat serveur (filtré ou non)
-  const [displayData, setDisplayData] = useState([]); // baseData filtré par communes + search
+  const [baseData, setBaseData]       = useState([]);
+  const [displayData, setDisplayData] = useState([]);
 
-  // Recherche
   const [search, setSearch] = useState('');
 
-  // Infinite scroll
-  const [visibleItems, setVisibleItems] = useState(20);
-  const loaderRef = useRef(null);
+  /* ---------- Infinite scroll (réécrit uniquement) ---------- */
+  const PAGE_SIZE = 20;
+  const [visibleItems, setVisibleItems] = useState(PAGE_SIZE);
 
-  // --- init user ---
+  const sentinelAllRef = useRef(null);
+  const sentinelDoingRef = useRef(null);
+  const sentinelDoneRef = useRef(null);
+  const observerRef = useRef(null);
+
+  const resetVisible = useCallback(() => setVisibleItems(PAGE_SIZE), []);
+  /* ---------------------------------------------------------- */
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem('user');
@@ -61,20 +62,16 @@ const Project = () => {
     } catch {}
   }, []);
 
-  // --- charger communes ---
   useEffect(() => {
     (async () => {
       try {
         const res = await axiosInstance.get('/feicom/api/communes/');
         const list = Array.isArray(res.data) ? res.data : (res.data?.results ?? []);
         setCommuneOptions(list.map(c => ({ value: c.id, label: c.nom })));
-      } catch (e) {
-        console.error('Erreur chargement communes', e);
-      }
+      } catch (e) {}
     })();
   }, []);
 
-  // --- charger exercices ---
   useEffect(() => {
     (async () => {
       setLoadingFilters(true);
@@ -84,14 +81,12 @@ const Project = () => {
           .map(e => ({ value: e.id, label: String(e.annee) }));
         setExerciceOptions(opts);
       } catch (e) {
-        console.error(e);
       } finally {
         setLoadingFilters(false);
       }
     })();
   }, []);
 
-  // --- charger agences si NATIONAL ---
   useEffect(() => {
     if (user?.role === 'NATIONAL') {
       (async () => {
@@ -101,18 +96,15 @@ const Project = () => {
             .map(a => ({ value: a.id, label: a.nom }));
           setAgenceOptions(opts);
         } catch (e) {
-          console.error('Erreur chargement agences', e);
         }
       })();
     }
   }, [user]);
 
-  // --- sync baseData with allData initially ---
   useEffect(() => {
     setBaseData(allData || []);
   }, [allData]);
 
-  // --- AUTO FETCH serveur si exercice+mois+agence sont remplis; sinon fallback allData ---
   useEffect(() => {
     const { exercice, mois, agence } = filters;
     const agenceId = user?.role === 'NATIONAL' ? agence : user?.agence;
@@ -145,67 +137,81 @@ const Project = () => {
     return () => { cancelled = true; };
   }, [filters.exercice, filters.mois, filters.agence, user, allData]);
 
-  // --- Filtre communes + recherche (local) ---
   useEffect(() => {
     const { communes } = filters;
-
-    // 1) filtrer par communes
     let afterCommunes = baseData;
     if (Array.isArray(communes) && communes.length > 0) {
       const setIds = new Set(communes.map(Number));
       afterCommunes = baseData.filter(p => setIds.has(Number(p.commune)));
     }
-
-    // 2) recherche texte
     const q = search.trim().toLowerCase();
     const afterSearch = !q
       ? afterCommunes
       : afterCommunes.filter(row =>
           Object.values(row || {}).join(' ').toLowerCase().includes(q)
         );
-
     setDisplayData(afterSearch);
   }, [baseData, filters.communes, search]);
 
-  // --- Réinitialiser le scroll si filtres/recherche changent ---
+  /* ---------- Infinite scroll reset (réécrit) ---------- */
   useEffect(() => {
-    setVisibleItems(20);
-  }, [filters.exercice, filters.mois, filters.agence, filters.communes, search]);
+    resetVisible();
+  }, [filters.exercice, filters.mois, filters.agence, filters.communes, search, resetVisible]);
 
-  // --- listAll / doing / done (placeholder pour l’instant) ---
+  useEffect(() => {
+    resetVisible();
+  }, [activeTab, resetVisible]);
+  /* ---------------------------------------------------- */
+
   const listAll   = useMemo(() => displayData, [displayData]);
-  const listDoing = useMemo(() => displayData.filter(() => false), [displayData]); // à adapter si tu as un statut
-  const listDone  = useMemo(() => displayData.filter(() => false), [displayData]); // à adapter si tu as un statut
+  const listDoing = useMemo(() => displayData.filter(() => false), [displayData]);
+  const listDone  = useMemo(() => displayData.filter(() => false), [displayData]);
 
-  // --- elements visibles (infinite scroll) : se base sur listAll (DÉFINI ICI) ---
-  const displayedData = useMemo(() => {
-    return listAll.slice(0, visibleItems);
-  }, [listAll, visibleItems]);
+  /* ---------- Infinite scroll: calcul des listes affichées (réécrit) ---------- */
+  const displayedAll   = useMemo(() => listAll.slice(0, visibleItems),   [listAll, visibleItems]);
+  const displayedDoing = useMemo(() => listDoing.slice(0, visibleItems), [listDoing, visibleItems]);
+  const displayedDone  = useMemo(() => listDone.slice(0, visibleItems),  [listDone, visibleItems]);
 
-  // --- Observer pour infinite scroll (utilise displayedData.length) ---
-  const handleObserver = useCallback((entries) => {
-    const [target] = entries;
-    if (target.isIntersecting && visibleItems < listAll.length) {
-      setVisibleItems(prev => prev + 20);
-    }
-  }, [listAll.length, visibleItems]);
+  const canLoadMoreAll   = displayedAll.length   < listAll.length;
+  const canLoadMoreDoing = displayedDoing.length < listDoing.length;
+  const canLoadMoreDone  = displayedDone.length  < listDone.length;
+  /* --------------------------------------------------------------------------- */
 
+  /* ---------- IntersectionObserver unique + 3 sentinelles (réécrit) ---------- */
   useEffect(() => {
-    const observer = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: '20px',
-      threshold: 0.1,
-    });
+    if (observerRef.current) observerRef.current.disconnect();
 
-    const el = loaderRef.current;
-    if (el) observer.observe(el);
+    const io = new IntersectionObserver(
+      entries => {
+        const [entry] = entries;
+        if (!entry || !entry.isIntersecting) return;
+
+        const moreAll   = activeTab === '1' && canLoadMoreAll;
+        const moreDoing = activeTab === '2' && canLoadMoreDoing;
+        const moreDone  = activeTab === '3' && canLoadMoreDone;
+
+        if (moreAll || moreDoing || moreDone) {
+          setVisibleItems(prev => prev + PAGE_SIZE);
+        }
+      },
+      { root: null, rootMargin: '600px', threshold: 0 }
+    );
+
+    observerRef.current = io;
+
+    const target =
+      activeTab === '1' ? sentinelAllRef.current :
+      activeTab === '2' ? sentinelDoingRef.current :
+      sentinelDoneRef.current;
+
+    if (target) io.observe(target);
 
     return () => {
-      if (el) observer.unobserve(el);
+      if (observerRef.current) observerRef.current.disconnect();
     };
-  }, [handleObserver]);
+  }, [activeTab, canLoadMoreAll, canLoadMoreDoing, canLoadMoreDone]);
+  /* --------------------------------------------------------------------------- */
 
-  // handlers
   const handleChange = (name, value) => setFilters(prev => ({ ...prev, [name]: value }));
   const handleReset = () => {
     setFilters({
@@ -223,9 +229,7 @@ const Project = () => {
       <Breadcrumbs parent="Project" title="Project List" mainTitle="Project List" />
       <Container fluid={true}>
         <Row className="project-card">
-          
 
-          {/* Filter bar */}
           <Col sm="12" className="mt-2">
             <Card>
               <CardBody>
@@ -236,19 +240,18 @@ const Project = () => {
                   showAgence={user?.role === 'NATIONAL'}
                   values={filters}
                   onChange={handleChange}
-                  onApply={() => { /* auto-apply: no-op */ }}
+                  onApply={() => {}}
                   onReset={handleReset}
                   loading={loadingFilters || loading}
                 />
-                <div style={{  }} className="me-2">
-                    {/* <Label className="form-label mb-0 small">Recherche</Label> */}
-                    <Input
-                      type="text"
-                      placeholder="Rechercher…"
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                    />
-                  </div>
+                <div className="me-2">
+                  <Input
+                    type="text"
+                    placeholder="Rechercher…"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
               </CardBody>
             </Card>
           </Col>
@@ -275,18 +278,7 @@ const Project = () => {
                     </NavItem>
                   </Nav>
                 </Col>
-                <Col md="6" className="d-flex justify-content-end gap-2">
-                  
-                  {/* 
-                  <Link
-                    className="btn btn-primary"
-                    style={{ color: 'white' }}
-                    to={`${process.env.PUBLIC_URL}/app/project/new-project/${layoutURL}`}
-                  >
-                    <PlusCircle /> {CreateNewProject}
-                  </Link> 
-                  */}
-                </Col>
+                <Col md="6" className="d-flex justify-content-end gap-2"></Col>
               </Row>
             </Card>
           </Col>
@@ -306,18 +298,17 @@ const Project = () => {
             <Card>
               <CardBody>
                 <TabContent activeTab={activeTab}>
-                  {/* ALL */}
                   <TabPane tabId="1">
                     <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
-                      {displayedData.map((item, i) => (
+                      {displayedAll.map((item, i) => (
                         <Col key={item.id ?? i}>
-                          <CusClass item={item} style={{ cursor: 'pointer' }}  onClick={ () => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)}  />
+                          <CusClass item={item} style={{ cursor: 'pointer' }} onClick={() => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)} />
                         </Col>
                       ))}
                     </Row>
 
-                    <div ref={loaderRef} className="d-flex justify-content-center">
-                      {visibleItems < listAll.length ? (
+                    <div ref={sentinelAllRef} className="d-flex justify-content-center">
+                      {canLoadMoreAll ? (
                         <Spinner color="primary" />
                       ) : (
                         listAll.length > 0 && (
@@ -333,17 +324,16 @@ const Project = () => {
                     )}
                   </TabPane>
 
-                  {/* DOING (placeholder) */}
                   <TabPane tabId="2">
                     <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
-                      {listDoing.slice(0, visibleItems).map((item, i) => (
+                      {displayedDoing.map((item, i) => (
                         <Col key={item.id ?? i}>
-                          <CusClass item={item} style={{ cursor: 'pointer' }}  onClick={ () => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)}  />
+                          <CusClass item={item} style={{ cursor: 'pointer' }} onClick={() => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)} />
                         </Col>
                       ))}
                     </Row>
-                    <div ref={loaderRef} className="d-flex justify-content-center">
-                      {visibleItems < listDoing.length ? (
+                    <div ref={sentinelDoingRef} className="d-flex justify-content-center">
+                      {canLoadMoreDoing ? (
                         <Spinner color="primary" />
                       ) : (
                         listDoing.length > 0 && (
@@ -358,17 +348,16 @@ const Project = () => {
                     )}
                   </TabPane>
 
-                  {/* DONE (placeholder) */}
                   <TabPane tabId="3">
                     <Row className="row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
-                      {listDone.slice(0, visibleItems).map((item, i) => (
+                      {displayedDone.map((item, i) => (
                         <Col key={item.id ?? i}>
-                          <CusClass item={item} style={{ cursor: 'pointer' }}  onClick={ () => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)}  />
+                          <CusClass item={item} style={{ cursor: 'pointer' }} onClick={() => navigate(`${process.env.PUBLIC_URL}/feicom/projets/${item.id}/detail`)} />
                         </Col>
                       ))}
                     </Row>
-                    <div ref={loaderRef} className="d-flex justify-content-center ">
-                      {visibleItems < listDone.length ? (
+                    <div ref={sentinelDoneRef} className="d-flex justify-content-center ">
+                      {canLoadMoreDone ? (
                         <Spinner color="primary" />
                       ) : (
                         listDone.length > 0 && (
