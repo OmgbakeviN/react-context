@@ -1,37 +1,16 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useCallback } from "react";
 import { Breadcrumbs, Btn } from "../../../../AbstractElements";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../api/axios";
+// ✅ ajoute Modal, ModalHeader, ModalBody ici
 import {
-  Container,
-  Row,
-  Col,
-  Card,
-  CardHeader,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  CardBody,
-  Badge,
-  Nav,
-  NavItem,
-  NavLink,
-  TabContent,
-  TabPane,
-  Table,
-  Progress,
-  Button,
-  ListGroup,
-  ListGroupItem,
-  UncontrolledAccordion,
-  AccordionItem,
-  AccordionHeader,
-  AccordionBody,
-  Input,
-  Form,
-  FormGroup,
-  Label,
+  Container, Row, Col, Card, CardHeader, Dropdown, DropdownToggle, DropdownMenu,
+  CardBody, Badge, Nav, NavItem, NavLink, TabContent, ModalFooter, TabPane, Table,
+  Progress, Button, ListGroup, ListGroupItem, UncontrolledAccordion, AccordionItem,
+  AccordionHeader, AccordionBody, Input, Form, FormGroup, Label,
+  Modal, ModalHeader, ModalBody,            // <-- AJOUT
 } from "reactstrap";
+
 import HeaderCard from "../../../Common/Component/HeaderCard";
 import DataTableComponent from "../../../Tables/DataTable/DataTableComponent";
 import CommonModal from "../../../UiKits/Modals/common/modal";
@@ -44,9 +23,9 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import Rapport from "../Rapport";
 // on importe les lots
 import Lots from "../Todo_lots/lots";
+import { toast } from "react-toastify";
 
-//on vas importer un modal de reactstrap
-import { Modal, ModalHeader, ModalBody } from "react-bootstrap";
+
 
 dayjs.locale("fr");
 dayjs.extend(localizedFormat);
@@ -55,12 +34,25 @@ const SingleProject = () => {
   //on definit usenavigate
   const navigate = useNavigate();
 
+  // --- LOTS: état du modal "Ajouter un lot"
+  const [addLotOpen, setAddLotOpen] = useState(false);
+  const [newLotName, setNewLotName] = useState("");
+  const [newLotAmount, setNewLotAmount] = useState("");
+  const [addingLot, setAddingLot] = useState(false);
+  const [addLotError, setAddLotError] = useState("");
+
   // on recupere le project id
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [visites, setVisites] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  //sttes pour la galerie
+  const [gallery, setGallery] = useState({ project: null, count: 0, images: [] });
+  const [imgOpen, setImgOpen] = useState(false);
+  const [imgIndex, setImgIndex] = useState(0);
+
 
   // on charge les project detail avec useeffect
   useEffect(() => {
@@ -76,7 +68,7 @@ const SingleProject = () => {
         if (!cancelled) {
           setError(
             err?.response?.data?.detail ||
-              "Une erreur est survenue lors du chargement du projet."
+            "Une erreur est survenue lors du chargement du projet."
           );
         }
       } finally {
@@ -90,8 +82,103 @@ const SingleProject = () => {
     };
   }, [id]);
 
+  //useeffect pour les images dun project ID
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { data } = await axiosInstance.get(`/feicom/api/projets/${id}/images/`);
+        if (mounted) setGallery(data);
+      } catch (_) {
+        if (mounted) setGallery({ project: id, count: 0, images: [] });
+      }
+    })();
+    return () => { mounted = false; };
+  }, [id]);
+
+  // navigation clavier quand le modal images est ouvert 
+  useEffect(() => {
+    if (!imgOpen) return;
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") setImgIndex((i) => (i + 1 < gallery.images.length ? i + 1 : i));
+      if (e.key === "ArrowLeft") setImgIndex((i) => (i - 1 >= 0 ? i - 1 : i));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [imgOpen, gallery.images.length]);
+
+  // helpers images
+  const openImageAt = (i) => { setImgIndex(i); setImgOpen(true); };
+  const closeImage = () => setImgOpen(false);
+  const prevImage = () => setImgIndex((i) => (i - 1 >= 0 ? i - 1 : i));
+  const nextImage = () => setImgIndex((i) => (i + 1 < gallery.images.length ? i + 1 : i));
+
+
+
+  // fonction pour recharger le projet après un CRUD
+  const reloadProject = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get(`/feicom/api/projets/${id}/`);
+      setProject(res.data);
+    } catch (err) {
+      setError(
+        err?.response?.data?.detail ||
+        "Une erreur est survenue lors du rechargement du projet."
+      );
+    }
+  }, [id]);
+
   console.log(project);
 
+  // ouvre/ferme le modal
+  const openAddLot = () => {
+    setAddLotError("");
+    setNewLotName("");
+    setNewLotAmount("");
+    setAddLotOpen(true);
+  };
+  const closeAddLot = () => setAddLotOpen(false);
+
+  // Création (POST /feicom/api/lots/)
+  const handleCreateLot = async (e) => {
+    e.preventDefault();
+    setAddLotError("");
+
+    // validations rapides
+    if (!newLotName?.trim()) {
+      setAddLotError("Le nom est requis.");
+      return;
+    }
+    if (!newLotAmount || isNaN(Number(newLotAmount))) {
+      setAddLotError("Le montant doit être un nombre.");
+      return;
+    }
+
+    setAddingLot(true);
+    try {
+      await axiosInstance.post("/feicom/api/lots/", {
+        nom: newLotName.trim(),
+        statut: "NOT STARTED",          // par défaut
+        montant: Number(newLotAmount),  // tu peux envoyer number ou string selon ton API
+        pourcentage: "0",                // 0% par defaut
+        projet: Number(id),             // id du projet courant
+      });
+
+      // succès: on referme, on recharge, on mets un toast success
+      toast.success("Lot ajouté avec succès.");
+      setAddLotOpen(false);
+      await reloadProject();
+      setActive("lots");
+    } catch (err) {
+      toast.error("Impossible d’ajouter le lot. Vérifie les champs.");
+      setAddLotError(
+        err?.response?.data?.detail ||
+        "Impossible d’ajouter le lot. Vérifie les champs."
+      );
+    } finally {
+      setAddingLot(false);
+    }
+  };
   // // on charge les visites d'un projet
   // useEffect(() =>{
   //   const fetchVisites = async () => {
@@ -179,7 +266,7 @@ const SingleProject = () => {
           <Badge color="danger">Absent</Badge>
         );
       },
-            center: true,
+      center: true,
 
     },
     {
@@ -780,8 +867,19 @@ const SingleProject = () => {
                           <Col md="12">
                             <Card>
                               <CardBody>
-                                {/* on passe project.lots en props */}
-                                <Lots lots={project.lots} />
+                                {/* Bouton d'ajout de lot */}
+                                <div className="d-flex justify-content-end mb-3">
+                                  <Button color="primary" size="sm" onClick={openAddLot}>
+                                    + Ajouter un lot
+                                  </Button>
+                                </div>
+
+                                {/* On passe l'id projet et un callback pour recharger après PUT/DELETE */}
+                                <Lots
+                                  lots={project.lots || []}
+                                  projectId={project.id}
+                                  onChanged={reloadProject}
+                                />
                               </CardBody>
                             </Card>
                           </Col>
@@ -860,7 +958,7 @@ const SingleProject = () => {
                     </Card>
                   </Col>
 
-                  <Col md="12">
+                  {/* <Col md="12">
                     <Card className="shadow-sm">
                       <CardHeader className="bg-white">
                         Risques & alertes
@@ -880,6 +978,78 @@ const SingleProject = () => {
                         </ListGroup>
                       </CardBody>
                     </Card>
+                  </Col> */}
+                  {/* Galerie dimages */}
+                  <Col md="12">
+                    <Card className="shadow-sm">
+                      <CardHeader className="bg-white d-flex justify-content-between align-items-center">
+                        <span>Galerie du projet</span>
+                        <Badge color="light" className="text-muted">{gallery.count || gallery.images.length} image(s)</Badge>
+                      </CardHeader>
+                      <CardBody>
+                        {gallery.images.length === 0 ? (
+                          <div className="text-muted small">Aucune image disponible pour ce projet.</div>
+                        ) : (
+                          <div
+                            className="d-grid"
+                            style={{
+                              gridTemplateColumns: "repeat(3, 1fr)",
+                              gap: "8px",
+                            }}
+                          >
+                            {gallery.images.map((src, i) => (
+                              <button
+                                key={src}
+                                onClick={() => openImageAt(i)}
+                                className="p-0 border-0 bg-transparent"
+                                style={{
+                                  width: "100%",
+                                  aspectRatio: "1 / 1",
+                                  borderRadius: 12,
+                                  overflow: "hidden",
+                                  boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                                }}
+                                title={`Ouvrir l’image ${i + 1}`}
+                              >
+                                <img
+                                  src={src}
+                                  alt={`Projet image ${i + 1}`}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                  loading="lazy"
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </CardBody>
+                    </Card>
+
+                    <Modal isOpen={imgOpen} toggle={closeImage} size="xl" centered>
+                      <ModalHeader toggle={closeImage}>
+                        Image {imgIndex + 1} / {gallery.images.length}
+                      </ModalHeader>
+                      <ModalBody className="d-flex justify-content-center">
+                        {gallery.images[imgIndex] && (
+                          <img
+                            src={gallery.images[imgIndex]}
+                            alt={`Projet image ${imgIndex + 1}`}
+                            className="img-fluid"
+                            style={{ maxHeight: "80vh", userSelect: "none" }}
+                          />
+                        )}
+                      </ModalBody>
+                      <ModalFooter className="d-flex justify-content-between">
+                        <Button color="secondary" onClick={prevImage} disabled={imgIndex === 0}>
+                          ← Précédent
+                        </Button>
+                        <div className="text-muted small">
+                          Utilise les flèches ← → du clavier
+                        </div>
+                        <Button color="primary" onClick={nextImage} disabled={imgIndex + 1 >= gallery.images.length}>
+                          Suivant →
+                        </Button>
+                      </ModalFooter>
+                    </Modal>
                   </Col>
                 </Row>
               </Col>
@@ -895,8 +1065,9 @@ const SingleProject = () => {
         size="lg"
       >
         // on passe le id en props
-        <ProjectVisitForm onSubmit={(data) => console.log(data)}  projetId={id}/>
+        <ProjectVisitForm onSubmit={(data) => console.log(data)} projetId={id} />
       </CommonModal>
+
       <CommonModal
         isOpen={modal2Open}
         title={modalTitle}
@@ -906,6 +1077,50 @@ const SingleProject = () => {
         {/* on passe project et aussi la visite en props */}
         <Rapport project={project} visit={visit} />
       </CommonModal>
+
+      <CommonModal
+        isOpen={addLotOpen}
+        title={<div className="fw-semibold">Ajouter un lot</div>}
+        toggler={closeAddLot}
+        size="md"
+      >
+        <form onSubmit={handleCreateLot} className="p-2">
+          <div className="mb-3">
+            <Label className="form-label">Nom du lot</Label>
+            <Input
+              type="text"
+              placeholder="Ex. Terrassements"
+              value={newLotName}
+              onChange={(e) => setNewLotName(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-3">
+            <Label className="form-label">Montant</Label>
+            <Input
+              type="number"
+              step="0.01"
+              placeholder="Ex. 12500000"
+              value={newLotAmount}
+              onChange={(e) => setNewLotAmount(e.target.value)}
+            />
+          </div>
+
+          {addLotError ? (
+            <div className="alert alert-danger py-2">{addLotError}</div>
+          ) : null}
+
+          <div className="d-flex justify-content-end gap-2">
+            <Button type="button" color="secondary" onClick={closeAddLot} disabled={addingLot}>
+              Annuler
+            </Button>
+            <Button type="submit" color="primary" disabled={addingLot}>
+              {addingLot ? "Enregistrement..." : "Ajouter"}
+            </Button>
+          </div>
+        </form>
+      </CommonModal>
+
     </Fragment>
   );
 };
