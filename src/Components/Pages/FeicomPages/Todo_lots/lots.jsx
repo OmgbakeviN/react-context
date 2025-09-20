@@ -22,7 +22,12 @@ const Lots = ({ lots }) => {
               onClick={() => toggle(lot.id.toString())}
               aria-expanded={isOpen}
             >
-              <span>{lot.nom}</span>
+              <span>{lot.nom} 
+                {/* on mets des badges de couleur */}
+                {lot.statut === 'STARTED' && <span className="badge bg-success">Started</span>}
+                {lot.statut === 'PLANNED' && <span className="badge bg-warning">Planned</span>}
+                {lot.statut === 'COMPLETED' && <span className="badge bg-success">Completed</span>}
+                </span>
               <span className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
                 ▼
               </span>
