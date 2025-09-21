@@ -152,7 +152,7 @@ const Lots = ({ lots = [], projectId, onChanged }) => {
           position: "relative",
           overflow: "hidden",
           border: "1px solid #e5e7eb",
-          borderRadius: 12,
+          borderRadius: 5,
           background: "#fff",
         };
 
@@ -164,7 +164,7 @@ const Lots = ({ lots = [], projectId, onChanged }) => {
           bottom: 0,
           width: `${value}%`,
           background:
-            "linear-gradient(90deg, rgba(16,185,129,0.22), rgba(59,130,246,0.18))",
+            "linear-gradient(90deg, rgba(249,115,22,0.25), rgba(16,185,129,0.25))",
           transition: "width 300ms ease",
           pointerEvents: "none",
         };
@@ -195,12 +195,12 @@ const Lots = ({ lots = [], projectId, onChanged }) => {
               <div className="d-flex align-items-center gap-2">
                 {/* Modifier le pourcentage */}
                 <Button
-                  color="secondary"
+                  color="primary"
                   size="sm"
                   onClick={() => openEdit(lot)}
                   title="Mettre à jour le pourcentage"
                 >
-                  % Modifier
+                <i className="fa fa-edit" />
                 </Button>
 
                 {/* Supprimer (ouvre le modal de confirmation) */}
@@ -291,7 +291,7 @@ const Lots = ({ lots = [], projectId, onChanged }) => {
           {lotToDelete ? (
             <>
               <p className="mb-2">
-                Tu es sur le point de supprimer le lot&nbsp;
+                Voule-vous supprimer ce lot&nbsp;
                 <strong>{lotToDelete.nom}</strong>.
               </p>
               <p className="mb-0 text-danger small">
