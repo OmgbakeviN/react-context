@@ -449,9 +449,9 @@ const SingleProject = () => {
                             </div>
                             <Progress
                               style={{ height: 14 }}
-                              value={p.avancement_physique}
+                              value={project.progress}
                             >
-                              {p.avancement_physique}%
+                              {project.progress}%
                             </Progress>
                           </CardBody>
                         </Card>
@@ -466,9 +466,9 @@ const SingleProject = () => {
                             <Progress
                               color="warning"
                               style={{ height: 14 }}
-                              value={project.pourcentage_consomme}
+                              value={project.payment_percent}
                             >
-                              {project.pourcentage_consomme}%
+                              {project.payment_percent}%
                             </Progress>
                           </CardBody>
                         </Card>
