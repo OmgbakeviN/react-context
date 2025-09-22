@@ -966,42 +966,6 @@ const SingleProject = () => {
                         </Row>
                       </TabPane>
 
-                      {/* ----- VISITES ----- */}
-                      <TabPane tabId="visites">
-                        <Row className="g-3">
-                          <Col className="text-end">
-                            <Btn
-                              attrBtn={{
-                                color: "primary",
-                                onClick: handleAddModal,
-                              }}
-                            >
-                              Add Project Visit
-                            </Btn>
-                          </Col>
-                          <Col lg="12">
-                            <Card>
-                              <CardBody>
-                                <div className="fw-bold mb-2">
-                                  Visit history
-                                </div>
-
-                                {/* on affiche les visites avec react data table */}
-                                <DataTable
-                                  columns={columns}
-                                  data={project.visites}
-                                  striped
-                                  center
-                                  pagination
-                                  progressPending={loading}
-                                  noDataComponent="NAN"
-                                />
-                              </CardBody>
-                            </Card>
-                          </Col>
-                        </Row>
-                      </TabPane>
-
                       {/* ----- FICHIERS ----- */}
                       <TabPane tabId="fichiers">
                         <Row className="g-3">
@@ -1157,7 +1121,7 @@ const SingleProject = () => {
                                                               window.open(f.url || f.file, "_blank", "noopener")
                                                             }
                                                           >
-                                                            <i className="fa fa-eye"/>
+                                                            <i className="fa fa-eye" />
                                                           </Button>
 
                                                           {/* Supprimer (ouvre le modal de confirmation) */}
@@ -1221,6 +1185,41 @@ const SingleProject = () => {
                         </Modal>
                       </TabPane>
 
+                      {/* ----- VISITES ----- */}
+                      <TabPane tabId="visites">
+                        <Row className="g-3">
+                          <Col className="text-end">
+                            <Btn
+                              attrBtn={{
+                                color: "primary",
+                                onClick: handleAddModal,
+                              }}
+                            >
+                              Add Project Visit
+                            </Btn>
+                          </Col>
+                          <Col lg="12">
+                            <Card>
+                              <CardBody>
+                                <div className="fw-bold mb-2">
+                                  Visit history
+                                </div>
+
+                                {/* on affiche les visites avec react data table */}
+                                <DataTable
+                                  columns={columns}
+                                  data={project.visites}
+                                  striped
+                                  center
+                                  pagination
+                                  progressPending={loading}
+                                  noDataComponent="NAN"
+                                />
+                              </CardBody>
+                            </Card>
+                          </Col>
+                        </Row>
+                      </TabPane>
 
                       {/* ----- LOTS ----- */}
                       <TabPane tabId="lots">
@@ -1296,7 +1295,7 @@ const SingleProject = () => {
                     </Card>
                   </Col>
 
-                  <Col md="12">
+                  {/* <Col md="12">
                     <Card className="shadow-sm">
                       <CardHeader className="bg-white">
                         Jalons à venir
@@ -1317,7 +1316,7 @@ const SingleProject = () => {
                         </ListGroup>
                       </CardBody>
                     </Card>
-                  </Col>
+                  </Col> */}
 
                   {/* <Col md="12">
                     <Card className="shadow-sm">
