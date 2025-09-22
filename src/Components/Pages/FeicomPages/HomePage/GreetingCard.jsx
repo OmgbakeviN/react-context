@@ -11,7 +11,7 @@ const GreetingCard = () => {
 
   return (
     <Col className="col-xxl-8 col-sm-6 box-col-6">
-      <div className="col-md-6 pb-4">
+      {/* <div className="col-md-6 pb-4">
         <Label className="col-form-label">Select Excercise</Label>
         <Input
           className="form-control form-control-primary btn-square"
@@ -25,7 +25,7 @@ const GreetingCard = () => {
           <option value="opt5">2021</option>
           <option value="opt6">2020</option>
         </Input>
-      </div>
+      </div> */}
 
       <Card className=" profile-box">
         <CardBody>

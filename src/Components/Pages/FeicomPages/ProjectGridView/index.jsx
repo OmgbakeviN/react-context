@@ -142,7 +142,15 @@ const Project = () => {
     let afterCommunes = baseData;
     if (Array.isArray(communes) && communes.length > 0) {
       const setIds = new Set(communes.map(Number));
-      afterCommunes = baseData.filter(p => setIds.has(Number(p.commune)));
+      afterCommunes = baseData.filter((p) => {
+        // Certains endpoints renvoient l'objet, d'autres parfois un id : on gère les 2.
+        const communeId =
+          p && p.commune
+            ? (typeof p.commune === "object" ? p.commune.id : p.commune)
+            : null;
+    
+        return communeId != null && setIds.has(Number(communeId));
+      });
     }
     const q = search.trim().toLowerCase();
     const afterSearch = !q
