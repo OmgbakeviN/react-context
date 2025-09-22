@@ -1157,7 +1157,7 @@ const SingleProject = () => {
                                                               window.open(f.url || f.file, "_blank", "noopener")
                                                             }
                                                           >
-                                                            Ouvrir
+                                                            <i className="fa fa-eye"/>
                                                           </Button>
 
                                                           {/* Supprimer (ouvre le modal de confirmation) */}
