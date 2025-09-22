@@ -53,6 +53,177 @@ const SingleProject = () => {
   const [imgOpen, setImgOpen] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
 
+  // state des crud fichier
+  const [files, setFiles] = useState([]);                  // liste brute renvoyée par l'API
+  const [filesLoading, setFilesLoading] = useState(false);
+  const [filesError, setFilesError] = useState("");
+
+  // Upload UI
+  const [uploadCategory, setUploadCategory] = useState("CONTRACT"); // cat. par défaut
+  const [uploadFiles, setUploadFiles] = useState([]);                // FileList -> Array<File>
+  const [uploading, setUploading] = useState(false);
+
+  // Delete (confirmation)
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
+  const [deletingFile, setDeletingFile] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  // --- Accordéon "maison" pour les catégories de fichiers
+  const [openCat, setOpenCat] = useState(""); // id de la cat ouverte, ex: "CONTRACT"
+  const toggleCat = (cat) => setOpenCat((prev) => (prev === cat ? "" : cat));
+
+  // categories
+  const FILE_CATEGORIES = [
+    "CONTRACT",
+    "REPORT",
+    "INVOICE",
+    "PLAN",
+    "LETTER",
+    "PICTURE",
+    "OTHER",
+  ];
+
+  // Récupère le nom de fichier depuis url/file
+  const filenameFrom = (f) => {
+    const s = f?.file || f?.url || "";
+    try {
+      const decoded = decodeURIComponent(s);
+      return decoded.split("/").pop() || s;
+    } catch {
+      return s.split("/").pop() || s;
+    }
+  };
+
+  // Regroupe par catégorie pour un rendu en "explorateur"
+  const groupByCategory = (items) => {
+    const map = {};
+    (items || []).forEach((it) => {
+      const cat = it.category || "UNCATEGORIZED";
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(it);
+    });
+    return map;
+  };
+
+  // Charge les fichiers du projet
+  useEffect(() => {
+    let mounted = true;
+    const loadFiles = async () => {
+      setFilesLoading(true);
+      setFilesError("");
+      try {
+        const { data } = await axiosInstance.get(
+          `/feicom/api/files/projets/${id}/files/`
+        );
+        // data attendu: Array<{id, projet, category, file, url, created_at}>
+        if (mounted) setFiles(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (mounted) {
+          setFiles([]);
+          setFilesError(
+            err?.response?.data?.detail ||
+            "Impossible de charger les pièces jointes."
+          );
+        }
+      } finally {
+        if (mounted) setFilesLoading(false);
+      }
+    };
+    if (id) loadFiles();
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
+  // Handler input:file (multiple)
+  const handlePickFiles = (e) => {
+    const fl = Array.from(e.target.files || []);
+    setUploadFiles(fl);
+  };
+
+  // POST /feicom/api/files/upload/  (multipart/form-data)
+  const handleUploadFiles = async (e) => {
+    e.preventDefault();
+    if (!uploadCategory) {
+      toast.error("Choisis une catégorie.");
+      return;
+    }
+    if (!uploadFiles.length) {
+      toast.error("Sélectionne au moins un fichier.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Upload séquentiel (simple et robuste)
+      for (const f of uploadFiles) {
+        const formData = new FormData();
+        formData.append("projet", id);
+        formData.append("category", uploadCategory);
+        formData.append("file", f);
+
+        await axiosInstance.post("/feicom/api/files/upload/", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
+      // Nettoyage
+      setUploadFiles([]);
+      // recharge la liste
+      try {
+        const { data } = await axiosInstance.get(
+          `/feicom/api/files/projets/${id}/files/`
+        );
+        setFiles(Array.isArray(data) ? data : []);
+      } catch { }
+
+      toast.success("Fichier(s) ajouté(s) avec succès.");
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.detail || "Échec de l’upload. Réessaie."
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Ouvre la confirmation
+  const askDeleteFile = (file) => {
+    setFileToDelete(file);
+    setDeleteError("");
+    setConfirmDeleteOpen(true);
+  };
+
+  // Ferme la confirmation
+  const closeConfirmDelete = () => {
+    if (deletingFile) return;
+    setConfirmDeleteOpen(false);
+    setFileToDelete(null);
+    setDeleteError("");
+  };
+
+  // DELETE /feicom/api/files/{id}/
+  const confirmDeleteFile = async () => {
+    if (!fileToDelete) return;
+    setDeletingFile(true);
+    setDeleteError("");
+    try {
+      await axiosInstance.delete(`/feicom/api/files/${fileToDelete.id}/`);
+
+      // met à jour la liste locale sans refetch
+      setFiles((prev) => prev.filter((x) => x.id !== fileToDelete.id));
+      setConfirmDeleteOpen(false);
+      setFileToDelete(null);
+      toast.success("Fichier supprimé.");
+    } catch (err) {
+      setDeleteError(
+        err?.response?.data?.detail || "Suppression impossible."
+      );
+    } finally {
+      setDeletingFile(false);
+    }
+  };
 
   // on charge les project detail avec useeffect
   useEffect(() => {
@@ -837,29 +1008,219 @@ const SingleProject = () => {
                           <Col md="12">
                             <Card>
                               <CardBody>
-                                <div className="fw-bold mb-3">
-                                  Pièces jointes
-                                </div>
-                                <ListGroup>
-                                  {p.fichiers.map((f, i) => (
-                                    <ListGroupItem
-                                      key={i}
-                                      className="d-flex justify-content-between align-items-center"
+                                <div className="fw-bold mb-3">Pièces jointes</div>
+
+                                {/* Formulaire d'upload */}
+                                <form onSubmit={handleUploadFiles} className="d-flex flex-wrap gap-2 align-items-end mb-3">
+                                  <FormGroup className="me-2 mb-2">
+                                    <Label className="form-label">Catégorie</Label>
+                                    <Input
+                                      type="select"
+                                      value={uploadCategory}
+                                      onChange={(e) => setUploadCategory(e.target.value)}
                                     >
-                                      <span className="text-truncate">
-                                        {f.nom}
-                                      </span>
-                                      <Button color="primary" size="sm" outline>
-                                        Ouvrir
-                                      </Button>
-                                    </ListGroupItem>
-                                  ))}
-                                </ListGroup>
+                                      {FILE_CATEGORIES.map((c) => (
+                                        <option key={c} value={c}>{c}</option>
+                                      ))}
+                                    </Input>
+                                  </FormGroup>
+
+                                  <FormGroup className="me-2 mb-2">
+                                    <Label className="form-label">Fichiers</Label>
+                                    <Input
+                                      type="file"
+                                      multiple
+                                      onChange={handlePickFiles}
+                                    />
+                                  </FormGroup>
+
+                                  <div className="mb-2">
+                                    <Button
+                                      color="primary"
+                                      type="submit"
+                                      disabled={uploading}
+                                    >
+                                      {uploading ? "Envoi..." : "Ajouter"}
+                                    </Button>
+                                  </div>
+                                </form>
+
+                                {/* Infos upload sélection */}
+                                {uploadFiles.length > 0 && (
+                                  <div className="small text-muted mb-3">
+                                    {uploadFiles.length} fichier(s) sélectionné(s)
+                                  </div>
+                                )}
+
+                                {/* Erreur chargement */}
+                                {filesError && (
+                                  <div className="alert alert-warning py-2">{filesError}</div>
+                                )}
+
+                                {/* Explorateur par catégorie (accordion maison) */}
+                                {filesLoading ? (
+                                  <div className="text-muted small">Chargement des fichiers…</div>
+                                ) : (
+                                  (() => {
+                                    const byCat = groupByCategory(files);
+                                    const cats = Object.keys(byCat).sort();
+
+                                    if (!cats.length) {
+                                      return <div className="text-muted small">Aucun fichier pour ce projet.</div>;
+                                    }
+
+                                    return (
+                                      <div className="d-flex flex-column gap-2">
+                                        {cats.map((cat) => {
+                                          const isOpen = openCat === cat;
+
+                                          // Styles "maison" (dans le style des Lots)
+                                          const wrapStyle = {
+                                            position: "relative",
+                                            overflow: "hidden",
+                                            border: "1px solid #e5e7eb",
+                                            borderRadius: 12,
+                                            background: "#fff",
+                                          };
+                                          const headerStyle = {
+                                            position: "relative",
+                                            zIndex: 1,
+                                          };
+
+                                          return (
+                                            <div key={cat} style={wrapStyle}>
+                                              {/* Header cliquable */}
+                                              <div
+                                                className="w-100 px-4 py-3 d-flex align-items-center justify-content-between"
+                                                style={headerStyle}
+                                              >
+                                                <div className="d-flex align-items-center gap-2">
+                                                  <button
+                                                    onClick={() => toggleCat(cat)}
+                                                    aria-expanded={isOpen}
+                                                    className="btn btn-link p-0 text-decoration-none fw-semibold text-dark"
+                                                    type="button"
+                                                    title={isOpen ? "Réduire" : "Déployer"}
+                                                  >
+                                                    {cat}
+                                                  </button>
+                                                  <Badge color="light" className="text-muted">
+                                                    {byCat[cat].length}
+                                                  </Badge>
+                                                </div>
+
+                                                <button
+                                                  className="btn btn-light btn-sm"
+                                                  onClick={() => toggleCat(cat)}
+                                                  aria-label={isOpen ? "Réduire" : "Déployer"}
+                                                  type="button"
+                                                >
+                                                  {isOpen ? "▲" : "▼"}
+                                                </button>
+                                              </div>
+
+                                              {/* Corps */}
+                                              {isOpen && (
+                                                <div
+                                                  className="px-3 pb-3 pt-2"
+                                                  style={{
+                                                    position: "relative",
+                                                    zIndex: 1,
+                                                    background: "white",
+                                                    borderTop: "1px solid #e5e7eb",
+                                                  }}
+                                                >
+                                                  <ListGroup flush>
+                                                    {byCat[cat].map((f) => (
+                                                      <ListGroupItem
+                                                        key={f.id}
+                                                        className="d-flex justify-content-between align-items-center"
+                                                      >
+                                                        <div className="text-truncate me-2" style={{ maxWidth: 420 }}>
+                                                          <div className="fw-semibold text-truncate">
+                                                            {filenameFrom(f)}
+                                                          </div>
+                                                          {f.created_at && (
+                                                            <div className="small text-muted">
+                                                              Ajouté le {dayjs(f.created_at).format("DD/MM/YYYY HH:mm")}
+                                                            </div>
+                                                          )}
+                                                        </div>
+
+                                                        <div className="d-flex align-items-center gap-2">
+                                                          {/* Ouvrir dans un nouvel onglet */}
+                                                          <Button
+                                                            color="primary"
+                                                            size="sm"
+                                                            outline
+                                                            onClick={() =>
+                                                              window.open(f.url || f.file, "_blank", "noopener")
+                                                            }
+                                                          >
+                                                            Ouvrir
+                                                          </Button>
+
+                                                          {/* Supprimer (ouvre le modal de confirmation) */}
+                                                          <Button
+                                                            color="danger"
+                                                            outline
+                                                            size="sm"
+                                                            onClick={() => askDeleteFile(f)}
+                                                            title="Supprimer le fichier"
+                                                          >
+                                                            <i className="fa fa-trash" />
+                                                          </Button>
+                                                        </div>
+                                                      </ListGroupItem>
+                                                    ))}
+                                                  </ListGroup>
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    );
+                                  })()
+                                )}
+
                               </CardBody>
                             </Card>
                           </Col>
                         </Row>
+
+                        {/* Modal de confirmation de suppression */}
+                        <Modal isOpen={confirmDeleteOpen} toggle={closeConfirmDelete} centered>
+                          <ModalHeader toggle={closeConfirmDelete}>Confirmer la suppression</ModalHeader>
+                          <ModalBody>
+                            {fileToDelete ? (
+                              <>
+                                <p className="mb-2">
+                                  Tu es sur le point de supprimer le fichier&nbsp;
+                                  <strong>{filenameFrom(fileToDelete)}</strong>.
+                                </p>
+                                <p className="mb-0 text-danger small">
+                                  Cette action est irréversible.
+                                </p>
+                                {deleteError ? (
+                                  <div className="alert alert-danger py-2 mt-3">{deleteError}</div>
+                                ) : null}
+                              </>
+                            ) : (
+                              "Aucun fichier sélectionné."
+                            )}
+                          </ModalBody>
+                          <ModalFooter>
+                            <Button color="secondary" onClick={closeConfirmDelete} disabled={deletingFile}>
+                              Annuler
+                            </Button>
+                            <Button color="danger" onClick={confirmDeleteFile} disabled={deletingFile}>
+                              {deletingFile ? "Suppression..." : "Supprimer"}
+                            </Button>
+                          </ModalFooter>
+                        </Modal>
                       </TabPane>
+
 
                       {/* ----- LOTS ----- */}
                       <TabPane tabId="lots">
