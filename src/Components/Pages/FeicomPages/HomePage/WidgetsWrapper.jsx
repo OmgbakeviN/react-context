@@ -14,6 +14,7 @@ import {
 } from "reactstrap";
 import axiosInstance from "../../../../api/axios";
 import Widgets1 from "../../../Common/CommonWidgets/Widgets1";
+import MonthlyDecomptes from "../Graphs/MonthlyDecomptes";
 
 // --- Redux exercices (années dispo)
 import {
@@ -316,6 +317,9 @@ const WidgetsWrapper = () => {
             </Col>
           </Row>
         </CardBody>
+      </Card>
+      <Card>
+          <MonthlyDecomptes data={stats?.monthly_decomptes} />
       </Card>
     </>
   );
