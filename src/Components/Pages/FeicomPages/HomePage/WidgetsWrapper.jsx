@@ -15,6 +15,8 @@ import {
 import axiosInstance from "../../../../api/axios";
 import Widgets1 from "../../../Common/CommonWidgets/Widgets1";
 import MonthlyDecomptes from "../Graphs/MonthlyDecomptes";
+import Monthly_final from "../Graphs/Monthly_final";
+import Monthly_provisional from "../Graphs/Monthly_provisional";
 
 // --- Redux exercices (années dispo)
 import {
@@ -318,9 +320,36 @@ const WidgetsWrapper = () => {
           </Row>
         </CardBody>
       </Card>
-      <Card>
-          <MonthlyDecomptes data={stats?.monthly_decomptes} />
-      </Card>
+
+      {/* graphiques */}
+      <Row className="g-3">
+        <Col md={12} lg={6}>
+          <Card>
+            <CardBody>
+              <h3>Decomptes</h3>
+              <MonthlyDecomptes data={stats?.monthly_decomptes} />
+            </CardBody>
+          </Card>
+        </Col>
+        <Col md={12} lg={6}>
+          <Card>
+            <CardBody>
+              <h3>Receptions Provisoires</h3>
+              <Monthly_provisional data={stats?.monthly_provisional_counts} />
+            </CardBody>
+          </Card>
+        </Col>
+      </Row >
+      <Row className="g-3">
+        <Col md={12} lg={6}>
+          <Card>
+            <CardBody claddName="pr-4">
+              <h3>Receptions Provisoires</h3>
+              <Monthly_final data={stats?.monthly_final_counts} />
+            </CardBody>
+          </Card>
+        </Col >
+      </Row>
     </>
   );
 };

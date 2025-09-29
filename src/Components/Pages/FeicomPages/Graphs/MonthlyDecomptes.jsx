@@ -14,17 +14,23 @@ import {
 // on exporte le composant
 export default function MonthlyDecomptes({ data }) {
     return (
-            <LineChart width={600} height={300} data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis datakey="total"/>
-                <Tooltip />
-                <Legend />
-                <Line type="monotone"
-                    dataKey="total"
-                    stroke="#8884d8" // Couleur de la ligne
-                    activeDot={{ r: 8 }}
-                    name="Total mensuel" />
-            </LineChart>
+        <LineChart
+            width={500}
+            height={300}
+            data={data}
+            margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+            }}
+        >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="total" stroke="#8884d8" activeDot={{ r: 8 }} />
+        </LineChart>
     );
 }
