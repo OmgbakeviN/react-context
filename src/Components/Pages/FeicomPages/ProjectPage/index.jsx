@@ -1424,8 +1424,8 @@ const SingleProject = () => {
         toggler={() => setModalOpen(false)}
         size="lg"
       >
-        // on passe le id en props
-        <ProjectVisitForm onSubmit={(data) => console.log(data)} projetId={id} />
+        {/* on passe le id en props, on submit on reloadproject */}
+        <ProjectVisitForm onSubmit={reloadProject()} projetId={id} />
       </CommonModal>
 
       <CommonModal
