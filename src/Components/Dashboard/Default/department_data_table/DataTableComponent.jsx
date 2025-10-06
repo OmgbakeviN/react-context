@@ -5,6 +5,8 @@ import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
 import DepartementForm from '../department_form/index'
 import DeleteConfirm from '../department_delete/index'
+// on import notre toast
+import { toast } from 'react-toastify';
 
 const DataTableComponent = () => {
   const [data, setData] = useState([]);
@@ -62,6 +64,7 @@ const handleDelete = () => {
           setToggleDelet(!toggleDelet);
           setModalOpen(false); 
           fetchDepartements();
+          toast.success('Départements supprimés avec succès');
         } catch (err) {
           setError("Erreur lors de la suppression : " + err.message);
         }
@@ -82,7 +85,8 @@ const handleDelete = () => {
           await axiosInstance.delete(`/feicom/api/departements/${row.id}/`);
           setModalOpen(false);
           fetchDepartements();
-        }}
+          toast.success('Département supprimé avec succès');
+          }}
         onCancel={() => setModalOpen(false)}
       />
     );
@@ -98,6 +102,7 @@ const handleDelete = () => {
           await axiosInstance.post('/feicom/api/departements/', data);
           setModalOpen(false);
           fetchDepartements();
+          toast.success('Département ajouté avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -115,6 +120,7 @@ const handleDelete = () => {
           await axiosInstance.put(`/feicom/api/departements/${row.id}/`, data);
           setModalOpen(false);
           fetchDepartements();
+          toast.success('Département modifié avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />

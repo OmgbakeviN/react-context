@@ -15,6 +15,8 @@ import {
   selectLotsLoading,
   selectLotsError,
 } from '../../../../reduxtool/lotsSlice';
+// on import notre toast
+import { toast } from 'react-toastify';
 
 // --- Formulaire lot ---
 const LotForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -150,6 +152,7 @@ const LotTable = () => {
         onSave={async (form) => {
           await dispatch(createLot(form)).unwrap();
           setModalOpen(false);
+          toast.success('Lot ajouté avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -165,6 +168,7 @@ const LotTable = () => {
         onSave={async (form) => {
           await dispatch(updateLot({ id: row.id, data: form })).unwrap();
           setModalOpen(false);
+          toast.success('Lot modifié avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -180,6 +184,7 @@ const LotTable = () => {
         onConfirm={async () => {
           await dispatch(deleteLot(row.id)).unwrap();
           setModalOpen(false);
+          toast.success('Lot supprimé avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -196,6 +201,7 @@ const LotTable = () => {
           await dispatch(deleteManyLots(selectedRows.map(r => r.id))).unwrap();
           setToggleDelet(v => !v);
           setModalOpen(false);
+          toast.success('Lots supprimés avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />

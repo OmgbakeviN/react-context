@@ -4,6 +4,7 @@ import { Btn, H4 } from '../../../../AbstractElements';
 import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
 import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
 // format de la date 
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
@@ -163,6 +164,7 @@ const VisiteTable = () => {
             setToggleDelet(!toggleDelet);
             setModalOpen(false); 
             fetchVisites();
+            toast.success('Visites supprimées avec succès');
           } catch (err) {
             setError("Erreur lors de la suppression : " + err.message);
           }
@@ -183,6 +185,7 @@ const VisiteTable = () => {
           await axiosInstance.delete(`/feicom/api/visites/${row.id}/`);
           setModalOpen(false);
           fetchVisites();
+          toast.success('Visite supprimée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -199,6 +202,7 @@ const VisiteTable = () => {
           await axiosInstance.post('/feicom/api/visites/', data);
           setModalOpen(false);
           fetchVisites();
+          toast.success('Visite ajoutée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -216,6 +220,7 @@ const VisiteTable = () => {
           await axiosInstance.put(`/feicom/api/visites/${row.id}/`, data);
           setModalOpen(false);
           fetchVisites();
+          toast.success('Visite modifiée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />

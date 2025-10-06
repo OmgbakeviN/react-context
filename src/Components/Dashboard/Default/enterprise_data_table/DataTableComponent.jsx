@@ -14,6 +14,8 @@ import {
   selectEntreprisesLoading,
   selectEntreprisesError
 } from '../../../../reduxtool/entreprisesSlice';
+// on import notre toast
+import { toast } from 'react-toastify';
 
 // --- Formulaire entreprise ---
 const EntrepriseForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -141,6 +143,7 @@ const EntrepriseTable = () => {
         onSave={async (form) => {
           await dispatch(createEntreprise(form)).unwrap();
           setModalOpen(false);
+          toast.success('Entreprise ajoutée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -157,6 +160,7 @@ const EntrepriseTable = () => {
         onSave={async (form) => {
           await dispatch(updateEntreprise({ id: row.id, data: form })).unwrap();
           setModalOpen(false);
+          toast.success('Entreprise modifiée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -173,6 +177,7 @@ const EntrepriseTable = () => {
         onConfirm={async () => {
           await dispatch(deleteEntreprise(row.id)).unwrap();
           setModalOpen(false);
+          toast.success('Entreprise supprimée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -190,6 +195,7 @@ const EntrepriseTable = () => {
           await dispatch(deleteManyEntreprises(selectedRows.map(r => r.id))).unwrap();
           setToggleDelet(v => !v);
           setModalOpen(false);
+          toast.success('Entreprises supprimées avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />

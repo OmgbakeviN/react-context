@@ -3,6 +3,8 @@ import DataTable from 'react-data-table-component';
 import { Btn, H4 } from '../../../../AbstractElements';
 import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
+// on import notre toast
+import { toast } from 'react-toastify';
 
 // --- Formulaire d'agence ---
 const AgenceForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -98,6 +100,7 @@ const DataTableComponent = () => {
             setToggleDelet(!toggleDelet);
             setModalOpen(false); 
             fetchAgences();
+            toast.success('Agences supprimées avec succès');
           } catch (err) {
             setError("Erreur lors de la suppression : " + err.message);
           }
@@ -118,6 +121,7 @@ const DataTableComponent = () => {
           await axiosInstance.delete(`/feicom/api/agences/${row.id}/`);
           setModalOpen(false);
           fetchAgences();
+          toast.success('Agence supprimée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -134,6 +138,7 @@ const DataTableComponent = () => {
           await axiosInstance.post('/feicom/api/agences/', data);
           setModalOpen(false);
           fetchAgences();
+          toast.success('Agence ajoutée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -151,6 +156,7 @@ const DataTableComponent = () => {
           await axiosInstance.put(`/feicom/api/agences/${row.id}/`, data);
           setModalOpen(false);
           fetchAgences();
+          toast.success('Agence modifiée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />

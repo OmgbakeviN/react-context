@@ -14,6 +14,8 @@ import {
   selectExercicesLoading,
   selectExercicesError,
 } from '../../../../reduxtool/exercicesSlice';
+// on import notre toast
+import { toast } from 'react-toastify';
 
 // --- Formulaire exercice ---
 const ExerciceForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -131,6 +133,7 @@ const filteredData = useMemo(() => {
         onSave={async (form) => {
           await dispatch(createExercice(form)).unwrap();
           setModalOpen(false);
+          toast.success('Exercice ajouté avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -146,6 +149,7 @@ const filteredData = useMemo(() => {
         onSave={async (form) => {
           await dispatch(updateExercice({ id: row.id, data: form })).unwrap();
           setModalOpen(false);
+          toast.success('Exercice modifié avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -160,7 +164,8 @@ const filteredData = useMemo(() => {
         noms={[`Exercice ${row.annee}`]}
         onConfirm={async () => {
           await dispatch(deleteExercice(row.id)).unwrap();
-          setModalOpen(false);
+          setModalOpen(false);  
+          toast.success('Exercice supprimé avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -177,6 +182,7 @@ const filteredData = useMemo(() => {
           await dispatch(deleteManyExercices(selectedRows.map(r => r.id))).unwrap();
           setToggleDelet(v => !v);
           setModalOpen(false);
+          toast.success('Exercices supprimés avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />

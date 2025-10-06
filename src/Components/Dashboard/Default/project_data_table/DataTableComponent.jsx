@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import DataTable from "react-data-table-component";
+import { toast } from 'react-toastify';
 import { Btn, H4 } from "../../../../AbstractElements";
 import axiosInstance from "../../../../api/axios";
 import CommonModal from "../../../UiKits/Modals/common/modal";
@@ -491,6 +492,7 @@ const ProjetTable = () => {
           await axiosInstance.post("/feicom/api/projets/", payload);
           setModalOpen(false);
           fetchProjets();
+          toast.success('Projet ajouté avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -507,6 +509,7 @@ const ProjetTable = () => {
           await axiosInstance.put(`/feicom/api/projets/${row.id}/`, payload);
           setModalOpen(false);
           fetchProjets();
+          toast.success('Projet modifié avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -523,6 +526,7 @@ const ProjetTable = () => {
           await axiosInstance.delete(`/feicom/api/projets/${row.id}/`);
           setModalOpen(false);
           fetchProjets();
+          toast.success('Projet supprimé avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -544,6 +548,7 @@ const ProjetTable = () => {
           setToggleDelet((v) => !v);
           setModalOpen(false);
           fetchProjets();
+          toast.success('Projets supprimés avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />

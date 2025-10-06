@@ -8,6 +8,7 @@ import {
   fetchTodos, createTodo, updateTodo, deleteTodo, deleteManyTodos,
   selectTodos, selectTodosLoading, selectTodosError
 } from '../../../../reduxtool/todosSlice';
+import { toast } from 'react-toastify';
 
 // --- Formulaire todo ---
 const TodoForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -138,6 +139,7 @@ const TodoTable = () => {
         onSave={async (form) => {
           await dispatch(createTodo(form)).unwrap();
           setModalOpen(false);
+          toast.success('Todo ajouté avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -153,6 +155,7 @@ const TodoTable = () => {
         onSave={async (form) => {
           await dispatch(updateTodo({ id: row.id, data: form })).unwrap();
           setModalOpen(false);
+          toast.success('Todo modifié avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -168,6 +171,7 @@ const TodoTable = () => {
         onConfirm={async () => {
           await dispatch(deleteTodo(row.id)).unwrap();
           setModalOpen(false);
+          toast.success('Todo supprimé avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -184,6 +188,7 @@ const TodoTable = () => {
           await dispatch(deleteManyTodos(selectedRows.map(r => r.id))).unwrap();
           setToggleDelet(v => !v);
           setModalOpen(false);
+          toast.success('Todos supprimés avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />

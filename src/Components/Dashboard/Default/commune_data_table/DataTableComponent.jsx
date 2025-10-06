@@ -3,6 +3,8 @@ import DataTable from 'react-data-table-component';
 import { Btn, H4 } from '../../../../AbstractElements';
 import axiosInstance from '../../../../api/axios';
 import CommonModal from '../../../UiKits/Modals/common/modal';
+// on import notre toast
+import { toast } from 'react-toastify';
 
 // --- Formulaire commune ---
 const CommuneForm = ({ initialData = {}, onSave, onCancel }) => {
@@ -134,7 +136,9 @@ const CommuneTable = () => {
             setToggleDelet(!toggleDelet);
             setModalOpen(false); 
             fetchCommunes();
+            toast.success('Communes supprimées avec succès');
           } catch (err) {
+            toast.error('Erreur lors de la suppression : ' + err.message);
             setError("Erreur lors de la suppression : " + err.message);
           }
         }}
@@ -154,6 +158,7 @@ const CommuneTable = () => {
           await axiosInstance.delete(`/feicom/api/communes/${row.id}/`);
           setModalOpen(false);
           fetchCommunes();
+          toast.success('Commune supprimée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -170,6 +175,7 @@ const CommuneTable = () => {
           await axiosInstance.post('/feicom/api/communes/', data);
           setModalOpen(false);
           fetchCommunes();
+          toast.success('Commune ajoutée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
@@ -187,6 +193,7 @@ const CommuneTable = () => {
           await axiosInstance.put(`/feicom/api/communes/${row.id}/`, data);
           setModalOpen(false);
           fetchCommunes();
+          toast.success('Commune modifiée avec succès');
         }}
         onCancel={() => setModalOpen(false)}
       />
