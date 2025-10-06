@@ -653,10 +653,10 @@ const ProjetTable = () => {
     },
     {
       name: "Avancement",
-      selector: (r) => r.Progress,
+      selector: (r) => r.progress,
       sortable: true,
       cell: (row) => {
-        const val = row.Progress;
+        const val = row.progress;
         return (
           <div className="progress-showcase" style={{ width: "86px" }}>
             <div className="progress sm-progress-bar">
