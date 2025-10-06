@@ -43,7 +43,7 @@ const LoginForm = ({ logoClassMain }) => {
         // navigate(`${process.env.PUBLIC_URL}/dashboard/default/${layoutURL}`);
         let target = `0`;
         if (user.payload.role === 'REGIONAL') {
-          target = `${process.env.PUBLIC_URL}/dashboard/default/${layoutURL}`;
+          target = `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/${layoutURL}`;
         } else if (user.payload.role === 'NATIONAL') {
           target = `${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/${layoutURL}`;
         }

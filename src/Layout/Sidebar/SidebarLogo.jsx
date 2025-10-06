@@ -17,11 +17,11 @@ const SidebarLogo = () => {
   return (
     <div className='logo-wrapper'>
       {layout1 !== "compact-wrapper dark-sidebar" && layout1 !== "compact-wrapper color-sidebar" && mixLayout ? (
-        <Link to={`${process.env.PUBLIC_URL}/dashboard/default/${layoutURL}`}>
+        <Link to={`${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/${layoutURL}`}>
           <Image attrImage={{ className: "Image d-inline", src: `${CubaIcon}`, alt: "" }} />
         </Link>
       ) : (
-        <Link to={`${process.env.PUBLIC_URL}/dashboard/default/${layoutURL}`}>
+        <Link to={`${process.env.PUBLIC_URL}/Pages/FeicomPages/HomePage/Page1/${layoutURL}`}>
           <Image attrImage={{ className: "Image d-inline", src: `${require("../../assets/images/logo/logo_dark.png")}`, alt: "" }} />
         </Link>
       )}
