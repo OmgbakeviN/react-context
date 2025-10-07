@@ -59,7 +59,7 @@ const authSlice = createSlice({
                 state.user = {
                     username: action.payload.username,
                     role: action.payload.role,
-                    agence: action.payload.agence,
+                    agence: action.payload.agence_id,
                     email: action.payload.email,
                     token: action.payload.token
                 };
