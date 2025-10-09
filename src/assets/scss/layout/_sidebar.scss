@@ -10,7 +10,7 @@
 }
 
 .Image{
-  width: 45px;
+  width: 50%;
   height: auto;
 }
 
@@ -3408,6 +3408,28 @@
     }
   }
 }
+
+/* === Taille des images quand le menu est FERMÉ === */
+.page-body-wrapper div.sidebar-wrapper.close_icon .logo-wrapper .Image {
+  width: 70px !important;   /* change 28px à ta convenance */
+  height: auto;
+  transition: width .2s ease;
+}
+
+/* Si le texte-logo est masqué et qu’il ne reste que la petite icône */
+.page-body-wrapper div.sidebar-wrapper.close_icon .logo-icon-wrapper img {
+  width: 70px;               /* change 28px si besoin */
+  height: 70px;
+  object-fit: contain;
+  transition: width .2s ease, height .2s ease;
+}
+
+/* (Optionnel) réduire l’avatar utilisateur en mode fermé */
+.page-body-wrapper div.sidebar-wrapper.close_icon .sidebar-user .img-90 {
+  width: 36px;
+  height: 36px;
+}
+
 
 /**=====================
     78. Sidebar CSS Ends
