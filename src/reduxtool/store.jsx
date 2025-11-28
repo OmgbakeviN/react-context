@@ -4,6 +4,7 @@ import entreprisesReducer from './entreprisesSlice';
 import exercicesReducer from './exercicesSlice';
 import lotsReducer from './lotsSlice';
 import todosReducer from './todosSlice';
+import monthlyReducer from './monthSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -11,6 +12,7 @@ export const store = configureStore({
     exercices: exercicesReducer,
     lots: lotsReducer,
     todos: todosReducer,
+    monthly: monthlyReducer,
   },
 })
 

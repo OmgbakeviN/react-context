@@ -65,6 +65,11 @@ export const MENUITEMS = [
             type: "link",
           },
           {
+            path: `${process.env.PUBLIC_URL}/feicom/monthly`,
+            title: "Monthly",
+            type: "link",
+          },
+          {
             path: `${process.env.PUBLIC_URL}/feicom/agences`,
             title: "Agences",
             type: "link",
