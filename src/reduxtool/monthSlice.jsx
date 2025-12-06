@@ -51,19 +51,19 @@ const monthlySlice = createSlice({
 
       // update
       .addCase(updateMonthly.fulfilled, (s, a) => {
-        const i = s.items.findIndex((x) => x.id === a.payload.id);
+        const i = s.items.findIndex((x) => x.target_id === a.payload.target_id);
         if (i !== -1) s.items[i] = a.payload;
       })
 
       // delete
       .addCase(deleteMonthly.fulfilled, (s, a) => {
-        s.items = s.items.filter((x) => x.id !== a.payload);
+        s.items = s.items.filter((x) => x.target_id !== a.payload);
       })
 
       // delete many
       .addCase(deleteManyMonthly.fulfilled, (s, a) => {
         const setIds = new Set(a.payload);
-        s.items = s.items.filter((x) => !setIds.has(x.id));
+        s.items = s.items.filter((x) => !setIds.has(x.target_id));
       });
   },
 });

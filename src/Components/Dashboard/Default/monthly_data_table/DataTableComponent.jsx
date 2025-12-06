@@ -161,9 +161,9 @@ const MonthlyTable = () => {
     setModalTitle('Suppression du Target');
     setModalContent(
       <DeleteConfirm
-        noms={[row.nom]}
+        noms={[`#${row.target_id}`]}
         onConfirm={async () => {
-          await dispatch(deleteMonthly(row.id)).unwrap();
+          await dispatch(deleteMonthly(row.target_id)).unwrap();
           setModalOpen(false);
           toast.success('Monthly Target supprimé avec succès');
         }}
@@ -177,7 +177,7 @@ const MonthlyTable = () => {
     setModalTitle('Suppression de plusieurs Targets');
     setModalContent(
       <DeleteConfirm
-        noms={selectedRows.map(r => r.nom)}
+        noms={selectedRows.map(r => `#${r.target_id}`)}
         onConfirm={async () => {
           await dispatch(deleteManyMonthly(selectedRows.map(r => r.target_id))).unwrap();
           setToggleDelet(v => !v);
@@ -292,6 +292,7 @@ const MonthlyTable = () => {
       <DataTable
         data={filteredData}
         columns={tableColumns}
+        keyField="target_id"
         striped
         center
         pagination
