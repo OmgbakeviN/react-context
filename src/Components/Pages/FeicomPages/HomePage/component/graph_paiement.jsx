@@ -57,14 +57,14 @@ export default function Example() {
             stroke="#8884d8" 
             activeDot={{ r: 8 }}
             strokeWidth={2}
-            name="Paiements"
+            name="DPO"
           />
           <Line 
             type="monotone" 
             dataKey="transactions" 
             stroke="#82ca9d" 
             strokeWidth={2}
-            name="Transactions"
+            name="Realisations"
           />
         </LineChart>
       </ResponsiveContainer>

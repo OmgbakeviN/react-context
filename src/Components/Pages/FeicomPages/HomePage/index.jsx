@@ -56,7 +56,7 @@ const Page1 = () => {
         </Row>
         <Row>
           <Col md={12} lg={6}>
-            <Example />
+                <Example />
           </Col>
           <Col md={12} lg={6}>
             <Row>
