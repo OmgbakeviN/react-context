@@ -220,6 +220,17 @@ const WidgetsWrapper = () => {
     [stats]
   );
 
+  const w_proj = useMemo(
+    () => ({
+      color: "success",
+      icon: "check",
+      title: "Nombre de Projets",
+      total: stats?.projects_count ?? "—",
+      gros: null,
+    }),
+    [stats]
+  );
+
   return (
     <>
       <Card className="shadow-sm">
@@ -309,6 +320,9 @@ const WidgetsWrapper = () => {
           {/* -------- Widgets -------- */}
           <Row className="g-3">
             <Col md={6} lg={4}>
+              <Widgets1 data={w_proj} noDelta />
+            </Col>
+            <Col md={6} lg={4}>
               <Widgets1 data={w_total} noDelta />
             </Col>
             <Col md={6} lg={4}>
@@ -322,7 +336,7 @@ const WidgetsWrapper = () => {
       </Card>
 
       {/* graphiques */}
-      <Row className="g-3">
+      {/* <Row className="g-3">
         <Col md={12} lg={6}>
           <Card>
             <CardBody>
@@ -349,7 +363,7 @@ const WidgetsWrapper = () => {
             </CardBody>
           </Card>
         </Col >
-      </Row>
+      </Row> */}
     </>
   );
 };

@@ -24,9 +24,9 @@ const Dashboard = () => {
       <Breadcrumbs mainTitle="Default" parent="Dashboard" title="Default" />
       <Container fluid={true}>
         <Row className="widget-grid">
-          <AllowedAccess roles={['NATIONAL','REGIONAL']}>
+          {/* <AllowedAccess roles={['NATIONAL','REGIONAL']}>
             <GreetingCard />
-          </AllowedAccess>
+          </AllowedAccess> */}
           <WidgetsWrapper />
           {/* <ProjectDash />
           <WidgetsWrapper />
