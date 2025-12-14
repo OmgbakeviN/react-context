@@ -20,7 +20,8 @@ import Example from "./component/graph_paiement";
 import Widgets1 from "../../../Common/CommonWidgets/Widgets1";
 // radial chart
 import RadialChart from "./component/Radial_chart";
-
+// project table 
+import ProjectTable from "./component/project_table";
 
 const Page1 = () => {
   const w_final = useMemo(
@@ -56,7 +57,7 @@ const Page1 = () => {
         </Row>
         <Row>
           <Col md={12} lg={6}>
-                <Example />
+            <Example />
           </Col>
           <Col md={12} lg={6}>
             <Row>
@@ -75,6 +76,15 @@ const Page1 = () => {
             <Row>
               <Widgets1 data={w_final} />
             </Row>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={12} lg={12}>
+            <Card>
+              <CardBody>
+                <ProjectTable />
+              </CardBody>
+            </Card>
           </Col>
         </Row>
       </Container>
