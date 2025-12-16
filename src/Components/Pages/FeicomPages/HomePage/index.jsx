@@ -22,6 +22,8 @@ import Widgets1 from "../../../Common/CommonWidgets/Widgets1";
 import RadialChart from "./component/Radial_chart";
 // project table 
 import ProjectTable from "./component/project_table";
+// le skillStatus component
+import SkillStatusChart from "../../../../Components/Widgets/Chart/SkillStatus"
 
 const Page1 = () => {
   const w_final = useMemo(
@@ -59,19 +61,9 @@ const Page1 = () => {
           <Col md={12} lg={6}>
             <Example />
           </Col>
-          <Col md={12} lg={6}>
+          <Col md={12} lg={6} className='chart-widget'>
             <Row>
-              <Card>
-                <CardBody>
-                  <RadialChart
-                    data={data}
-                    title="Progression des paiements"
-                    unit="%"
-                    innerRadius={40}
-                    outerRadius={80}
-                  />
-                </CardBody>
-              </Card>
+                <SkillStatusChart />
             </Row>
             <Row>
               <Widgets1 data={w_final} />
