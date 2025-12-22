@@ -40,10 +40,10 @@ const WidgetsWrapper = ({ kpis }) => {
 
   return (
     <Row className="g-3">
-      <Col md={6} lg={3}><Widgets1 data={w_proj} noDelta /></Col>
-      <Col md={6} lg={3}><Widgets1 data={w_decomptes} noDelta /></Col>
-      <Col md={6} lg={3}><Widgets1 data={w_dpo} noDelta /></Col>
-      <Col md={6} lg={3}><Widgets1 data={w_actual} noDelta /></Col>
+      <Col md={6} lg={4}><Widgets1 data={w_proj} noDelta /></Col>
+      <Col md={6} lg={4}><Widgets1 data={w_decomptes} noDelta /></Col>
+      <Col md={6} lg={4}><Widgets1 data={w_dpo} noDelta /></Col>
+      <Col md={6} lg={4}><Widgets1 data={w_actual} noDelta /></Col>
     </Row>
   );
 };

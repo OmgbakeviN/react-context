@@ -174,92 +174,93 @@ const Page1 = () => {
       <Breadcrumbs mainTitle="Dashboard" parent="Feicom" title="Dashboard" />
       <Container fluid={true}>
         {/* ---- BARRE DE FILTRES ---- */}
-        <Row className="g-3 mb-3">
-          <Col xs={12} md={3}>
-            <Card className="shadow-sm">
-              <CardBody>
-                <Label className="form-label mb-1">Exercice</Label>
-                <Input
-                  type="select"
-                  value={year}
-                  onChange={(e) => setYear(Number(e.target.value))}
-                  disabled={exercicesLoading}
-                >
-                  {(exercices || [])
-                    .map((e) => Number(e.annee))
-                    .filter(Boolean)
-                    .sort((a, b) => b - a)
-                    .map((y) => (
-                      <option key={y} value={y}>{y}</option>
+        {/* ---- BARRE DE FILTRES ---- */}
+        <Card className="shadow-sm">
+          <CardBody className="p-3">
+            <Row className="g-3 align-items-end">
+
+              {/* Exercice Column */}
+              <Col xs={12} md={6} lg={3}>
+                <div className="d-flex flex-column">
+                  <Label className="form-label mb-1">Exercice</Label>
+                  <Input
+                    type="select"
+                    value={year}
+                    onChange={(e) => setYear(Number(e.target.value))}
+                    disabled={exercicesLoading}
+                  >
+                    {(exercices || [])
+                      .map((e) => Number(e.annee))
+                      .filter(Boolean)
+                      .sort((a, b) => b - a)
+                      .map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                  </Input>
+                  {exercicesError && (
+                    <div className="small text-danger mt-1">{exercicesError}</div>
+                  )}
+                </div>
+              </Col>
+
+              {/* Mois Column */}
+              <Col xs={12} md={6} lg={3}>
+                <div className="d-flex flex-column">
+                  <Label className="form-label mb-1">Mois</Label>
+                  <Input
+                    type="select"
+                    value={month}
+                    onChange={(e) => setMonth(e.target.value === "" ? "" : Number(e.target.value))}
+                  >
+                    {MONTHS.map((m) => (
+                      <option key={String(m.value)} value={m.value}>
+                        {m.label}
+                      </option>
                     ))}
-                </Input>
-                {exercicesError && (
-                  <div className="small text-danger mt-1">{exercicesError}</div>
-                )}
-              </CardBody>
-            </Card>
-          </Col>
+                  </Input>
+                </div>
+              </Col>
 
+              {/* Agence Column */}
+              <Col xs={12} md={6} lg={3}>
+                <div className="d-flex flex-column">
+                  <Label className="form-label mb-1">Agence</Label>
+                  <Input
+                    type="select"
+                    value={agence}
+                    onChange={(e) => setAgence(e.target.value === "" ? "" : Number(e.target.value))}
+                    disabled={agencesLoading}
+                  >
+                    <option value="">Toutes les agences</option>
+                    {agences.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.nom} ({a.code})
+                      </option>
+                    ))}
+                  </Input>
+                  {agencesError && <div className="small text-danger mt-1">{agencesError}</div>}
+                </div>
+              </Col>
 
-          <Col xs={12} md={3}>
-            <Card className="shadow-sm">
-              <CardBody>
-                <Label className="form-label mb-1">Mois</Label>
-                <Input
-                  type="select"
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value === "" ? "" : Number(e.target.value))}
-                >
-                  {MONTHS.map((m) => (
-                    <option key={String(m.value)} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </Input>
-              </CardBody>
-            </Card>
-          </Col>
+              {/* Statut Column */}
+              <Col xs={12} md={6} lg={3}>
+                <div className="d-flex flex-column">
+                  <Label className="form-label mb-1">Statut</Label>
+                  <Input
+                    type="select"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                  >
+                    {STATUSES.map((s) => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </Input>
+                </div>
+              </Col>
 
-          {/* Si tu veux forcer l’agence par l’utilisateur, masque ce select */}
-          <Col xs={12} md={3}>
-            <Card className="shadow-sm">
-              <CardBody>
-                <Label className="form-label mb-1">Agence</Label>
-                <Input
-                  type="select"
-                  value={agence}
-                  onChange={(e) => setAgence(e.target.value === "" ? "" : Number(e.target.value))}
-                  disabled={agencesLoading}
-                >
-                  <option value="">Toutes les agences</option>
-                  {agences.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.nom} ({a.code})
-                    </option>
-                  ))}
-                </Input>
-                {agencesError && <div className="small text-danger mt-1">{agencesError}</div>}
-              </CardBody>
-            </Card>
-          </Col>
-
-          <Col xs={12} md={3}>
-            <Card className="shadow-sm">
-              <CardBody>
-                <Label className="form-label mb-1">Statut</Label>
-                <Input
-                  type="select"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  {STATUSES.map((s) => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
-                </Input>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+            </Row>
+          </CardBody>
+        </Card>
 
         {/* Erreur / Loader global */}
         {kpisError && (
