@@ -1,307 +1,234 @@
-import React, { Fragment, useState, useEffect, useCallback } from "react";
-import { Breadcrumbs, Btn } from "../../../../AbstractElements";
+// src/Components/Pages/FeicomPages/ProjectPage/index.jsx
+import React, { Fragment, useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "../../../../api/axios";
-// ✅ ajoute Modal, ModalHeader, ModalBody ici
-import {
-  Container, Row, Col, Card, CardHeader, Dropdown, DropdownToggle, DropdownMenu,
-  CardBody, Badge, Nav, NavItem, NavLink, TabContent, ModalFooter, TabPane, Table,
-  Progress, Button, ListGroup, ListGroupItem, UncontrolledAccordion, AccordionItem,
-  AccordionHeader, AccordionBody, Input, Form, FormGroup, Label,
-  Modal, ModalHeader, ModalBody,            // <-- AJOUT
-} from "reactstrap";
-
-import HeaderCard from "../../../Common/Component/HeaderCard";
-import DataTableComponent from "../../../Tables/DataTable/DataTableComponent";
-import CommonModal from "../../../UiKits/Modals/common/modal";
-import ProjectVisitForm from "./ProjectVisitForm";
-import DataTable from "react-data-table-component";
-import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import "dayjs/locale/fr";
-import localizedFormat from "dayjs/plugin/localizedFormat";
+import {
+  Container, Row, Col, Card, CardBody, CardHeader, Badge, Button,
+  Modal, ModalHeader, ModalBody, ModalFooter, Input, Label, Progress
+} from "reactstrap";
+import { Breadcrumbs } from "../../../../AbstractElements";
+import { ToastContainer, toast } from "react-toastify";
+import axiosInstance from "../../../../api/axios";
+import CommonModal from "../../../UiKits/Modals/common/modal";
 import Rapport from "../Rapport";
-// on importe les lots
-import Lots from "../Todo_lots/lots";
-import { toast } from "react-toastify";
+import ProjectVisitForm from "./ProjectVisitForm";
 
-
+// ==== Composants UI “dumb” ====
+import ProjectHeader from "./components/ProjectHeader";
+import ProjectTabs from "./components/ProjectTabs";
+import ProjectResume from "./components/ProjectResume";
+import ProjectFinance from "./components/ProjectFinance";
+import ProjectVisitsTable from "./components/ProjectVisitsTable";
+import ProjectFiles from "./components/ProjectFiles";
+import ProjectLots from "./components/ProjectLots";
+import ProjectGallery from "./components/ProjectGallery";
+import ImageLightbox from "./components/ImageLightbox";
+import ProjectQuickEdit from "./components/ProjectQuickEdit";
 
 dayjs.locale("fr");
-dayjs.extend(localizedFormat);
+
+// Format monétaire
+const money = (n) =>
+  (Number(n) || 0).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " FCFA";
+
+// Catégories de fichiers proposées
+const FILE_CATEGORIES = ["CONTRACT", "REPORT", "INVOICE", "PLAN", "LETTER", "PICTURE", "OTHER"];
 
 const SingleProject = () => {
-  //on definit usenavigate
-  const navigate = useNavigate();
+  const { id } = useParams();
 
-  // --- LOTS: état du modal "Ajouter un lot"
+  // ---------- States principaux ----------
+  const [project, setProject] = useState(null);
+  const [loadingProject, setLoadingProject] = useState(false);
+  const [errorProject, setErrorProject] = useState("");
+
+  // Galerie
+  const [gallery, setGallery] = useState({ project: null, count: 0, images: [] });
+  const [imgOpen, setImgOpen] = useState(false);
+  const [imgIndex, setImgIndex] = useState(0);
+
+  // Fichiers
+  const [files, setFiles] = useState([]);
+  const [filesLoading, setFilesLoading] = useState(false);
+  const [filesError, setFilesError] = useState("");
+  const [uploadCategory, setUploadCategory] = useState(FILE_CATEGORIES[0]);
+  const [uploadFiles, setUploadFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  // Fichiers – accordéon simple
+  const [openCat, setOpenCat] = useState("");
+  const toggleCat = (cat) => setOpenCat((prev) => (prev === cat ? "" : cat));
+
+  // Fichiers – suppression
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
+  const [deletingFile, setDeletingFile] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  // Onglet actif
+  const [active, setActive] = useState("visites");
+
+  // Modals visites
+  const [modalAddVisitOpen, setModalAddVisitOpen] = useState(false);
+  const [modalVisitOpen, setModalVisitOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [visit, setVisit] = useState(null);
+
+  // Lots – ajout
   const [addLotOpen, setAddLotOpen] = useState(false);
   const [newLotName, setNewLotName] = useState("");
   const [newLotAmount, setNewLotAmount] = useState("");
   const [addingLot, setAddingLot] = useState(false);
   const [addLotError, setAddLotError] = useState("");
 
-  // on recupere le project id
-  const { id } = useParams();
-  const [project, setProject] = useState(null);
-  const [visites, setVisites] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  //sttes pour la galerie
-  const [gallery, setGallery] = useState({ project: null, count: 0, images: [] });
-  const [imgOpen, setImgOpen] = useState(false);
-  const [imgIndex, setImgIndex] = useState(0);
-
-  // state des crud fichier
-  const [files, setFiles] = useState([]);                  // liste brute renvoyée par l'API
-  const [filesLoading, setFilesLoading] = useState(false);
-  const [filesError, setFilesError] = useState("");
-
-  // Upload UI
-  const [uploadCategory, setUploadCategory] = useState("CONTRACT"); // cat. par défaut
-  const [uploadFiles, setUploadFiles] = useState([]);                // FileList -> Array<File>
-  const [uploading, setUploading] = useState(false);
-
-  // Delete (confirmation)
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState(null);
-  const [deletingFile, setDeletingFile] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
-
-  // --- Accordéon "maison" pour les catégories de fichiers
-  const [openCat, setOpenCat] = useState(""); // id de la cat ouverte, ex: "CONTRACT"
-  const toggleCat = (cat) => setOpenCat((prev) => (prev === cat ? "" : cat));
-
-  // categories
-  const FILE_CATEGORIES = [
-    "CONTRACT",
-    "REPORT",
-    "INVOICE",
-    "PLAN",
-    "LETTER",
-    "PICTURE",
-    "OTHER",
-  ];
-
-  // Récupère le nom de fichier depuis url/file
-  const filenameFrom = (f) => {
-    const s = f?.file || f?.url || "";
+  // ---------- Fetchers (avec logs pour debug) ----------
+  const loadProject = useCallback(async () => {
+    if (!id) return;
+    setLoadingProject(true);
+    setErrorProject("");
     try {
-      const decoded = decodeURIComponent(s);
-      return decoded.split("/").pop() || s;
-    } catch {
-      return s.split("/").pop() || s;
+      const url = `/feicom/api/projets/${id}/`;
+      console.log("[PROJECT] GET", url);
+      const { data } = await axiosInstance.get(url);
+      console.log("[PROJECT] Response:", data);
+      setProject(data);
+    } catch (e) {
+      console.error("[PROJECT] Error:", e?.response?.data || e?.message);
+      setErrorProject(e?.response?.data?.detail || "Chargement du projet impossible.");
+    } finally {
+      setLoadingProject(false);
     }
-  };
-
-  // Regroupe par catégorie pour un rendu en "explorateur"
-  const groupByCategory = (items) => {
-    const map = {};
-    (items || []).forEach((it) => {
-      const cat = it.category || "UNCATEGORIZED";
-      if (!map[cat]) map[cat] = [];
-      map[cat].push(it);
-    });
-    return map;
-  };
-
-  // Charge les fichiers du projet
-  useEffect(() => {
-    let mounted = true;
-    const loadFiles = async () => {
-      setFilesLoading(true);
-      setFilesError("");
-      try {
-        const { data } = await axiosInstance.get(
-          `/feicom/api/files/projets/${id}/files/`
-        );
-        // data attendu: Array<{id, projet, category, file, url, created_at}>
-        if (mounted) setFiles(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (mounted) {
-          setFiles([]);
-          setFilesError(
-            err?.response?.data?.detail ||
-            "Impossible de charger les pièces jointes."
-          );
-        }
-      } finally {
-        if (mounted) setFilesLoading(false);
-      }
-    };
-    if (id) loadFiles();
-    return () => {
-      mounted = false;
-    };
   }, [id]);
 
-  // Handler input:file (multiple)
-  const handlePickFiles = (e) => {
-    const fl = Array.from(e.target.files || []);
-    setUploadFiles(fl);
-  };
+  const loadGallery = useCallback(async () => {
+    if (!id) return;
+    try {
+      const url = `/feicom/api/projets/${id}/images/`;
+      console.log("[GALLERY] GET", url);
+      const { data } = await axiosInstance.get(url);
+      console.log("[GALLERY] Response:", data);
+      setGallery(data || { project: id, count: 0, images: [] });
+    } catch (e) {
+      console.error("[GALLERY] Error:", e?.response?.data || e?.message);
+      setGallery({ project: id, count: 0, images: [] });
+    }
+  }, [id]);
 
-  // POST /feicom/api/files/upload/  (multipart/form-data)
+  const loadFiles = useCallback(async () => {
+    if (!id) return;
+    setFilesLoading(true);
+    setFilesError("");
+    try {
+      const url = `/feicom/api/files/projets/${id}/files/`;
+      console.log("[FILES] GET", url);
+      const { data } = await axiosInstance.get(url);
+      console.log("[FILES] Response:", data);
+      setFiles(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("[FILES] Error:", e?.response?.data || e?.message);
+      setFiles([]);
+      setFilesError(e?.response?.data?.detail || "Impossible de charger les pièces jointes.");
+    } finally {
+      setFilesLoading(false);
+    }
+  }, [id]);
+
+  // ---------- Effets init ----------
+  useEffect(() => { loadProject(); }, [loadProject]);
+  useEffect(() => { loadGallery(); }, [loadGallery]);
+  useEffect(() => { loadFiles(); }, [loadFiles]);
+
+  // ---------- Handlers FICHIERS ----------
+  const handlePickFiles = (e) => setUploadFiles(Array.from(e.target.files || []));
+
   const handleUploadFiles = async (e) => {
     e.preventDefault();
-    if (!uploadCategory) {
-      toast.error("Choisis une catégorie.");
-      return;
-    }
-    if (!uploadFiles.length) {
-      toast.error("Sélectionne au moins un fichier.");
-      return;
-    }
+    if (!uploadCategory || !uploadFiles.length) return;
 
     setUploading(true);
     try {
-      // Upload séquentiel (simple et robuste)
       for (const f of uploadFiles) {
         const formData = new FormData();
         formData.append("projet", id);
         formData.append("category", uploadCategory);
         formData.append("file", f);
-
+        console.log("[FILES] POST /feicom/api/files/upload/", { projet: id, category: uploadCategory, file: f.name });
         await axiosInstance.post("/feicom/api/files/upload/", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
-
-      // Nettoyage
       setUploadFiles([]);
-      // recharge la liste
-      try {
-        const { data } = await axiosInstance.get(
-          `/feicom/api/files/projets/${id}/files/`
-        );
-        setFiles(Array.isArray(data) ? data : []);
-      } catch { }
-
-      toast.success("Fichier(s) ajouté(s) avec succès.");
-    } catch (err) {
-      toast.error(
-        err?.response?.data?.detail || "Échec de l’upload. Réessaie."
-      );
+      await loadFiles();
+    } catch (e) {
+      console.error("[FILES] Upload error:", e?.response?.data || e?.message);
+      setFilesError(e?.response?.data?.detail || "Échec de l’upload.");
     } finally {
       setUploading(false);
     }
   };
 
-  // Ouvre la confirmation
   const askDeleteFile = (file) => {
     setFileToDelete(file);
     setDeleteError("");
     setConfirmDeleteOpen(true);
   };
-
-  // Ferme la confirmation
   const closeConfirmDelete = () => {
     if (deletingFile) return;
     setConfirmDeleteOpen(false);
     setFileToDelete(null);
     setDeleteError("");
   };
-
-  // DELETE /feicom/api/files/{id}/
   const confirmDeleteFile = async () => {
     if (!fileToDelete) return;
     setDeletingFile(true);
     setDeleteError("");
     try {
-      await axiosInstance.delete(`/feicom/api/files/${fileToDelete.id}/`);
-
-      // met à jour la liste locale sans refetch
+      const url = `/feicom/api/files/${fileToDelete.id}/`;
+      console.log("[FILES] DELETE", url);
+      await axiosInstance.delete(url);
       setFiles((prev) => prev.filter((x) => x.id !== fileToDelete.id));
       setConfirmDeleteOpen(false);
       setFileToDelete(null);
-      toast.success("Fichier supprimé.");
-    } catch (err) {
-      setDeleteError(
-        err?.response?.data?.detail || "Suppression impossible."
-      );
+    } catch (e) {
+      console.error("[FILES] Delete error:", e?.response?.data || e?.message);
+      setDeleteError(e?.response?.data?.detail || "Suppression impossible.");
     } finally {
       setDeletingFile(false);
     }
   };
 
-  // on charge les project detail avec useeffect
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchProject = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axiosInstance.get(`/feicom/api/projets/${id}/`);
-        if (!cancelled) setProject(response.data);
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err?.response?.data?.detail ||
-            "Une erreur est survenue lors du chargement du projet."
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    if (id) fetchProject();
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  //useeffect pour les images dun project ID
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const { data } = await axiosInstance.get(`/feicom/api/projets/${id}/images/`);
-        if (mounted) setGallery(data);
-      } catch (_) {
-        if (mounted) setGallery({ project: id, count: 0, images: [] });
-      }
-    })();
-    return () => { mounted = false; };
-  }, [id]);
-
-  // navigation clavier quand le modal images est ouvert 
-  useEffect(() => {
-    if (!imgOpen) return;
-    const onKey = (e) => {
-      if (e.key === "ArrowRight") setImgIndex((i) => (i + 1 < gallery.images.length ? i + 1 : i));
-      if (e.key === "ArrowLeft") setImgIndex((i) => (i - 1 >= 0 ? i - 1 : i));
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [imgOpen, gallery.images.length]);
-
-  // helpers images
+  // ---------- Handlers GALERIE ----------
   const openImageAt = (i) => { setImgIndex(i); setImgOpen(true); };
   const closeImage = () => setImgOpen(false);
   const prevImage = () => setImgIndex((i) => (i - 1 >= 0 ? i - 1 : i));
   const nextImage = () => setImgIndex((i) => (i + 1 < gallery.images.length ? i + 1 : i));
 
+  // Navigation clavier pour la galerie
+  useEffect(() => {
+    if (!imgOpen) return;
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") nextImage();
+      if (e.key === "ArrowLeft") prevImage();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [imgOpen, gallery.images.length]);
 
+  // ---------- Handlers VISITES ----------
+  const openAddVisit = () => {
+    setModalTitle(<div className="fw-semibold">Fiche de Visite – PCCM / FEICOM</div>);
+    setModalAddVisitOpen(true);
+  };
+  const openVisit = (row) => {
+    setVisit(row);
+    setModalTitle(<div className="fw-semibold">Visite – PCCM / FEICOM</div>);
+    setModalVisitOpen(true);
+  };
 
-  // fonction pour recharger le projet après un CRUD
-  const reloadProject = useCallback(async () => {
-    try {
-      const res = await axiosInstance.get(`/feicom/api/projets/${id}/`);
-      setProject(res.data);
-    } catch (err) {
-      setError(
-        err?.response?.data?.detail ||
-        "Une erreur est survenue lors du rechargement du projet."
-      );
-    }
-  }, [id]);
+  // ---------- Handlers LOTS ----------
+  const reloadProject = useCallback(async () => { await loadProject(); }, [loadProject]);
 
-  console.log(project);
-
-  // ouvre/ferme le modal
   const openAddLot = () => {
     setAddLotError("");
     setNewLotName("");
@@ -310,1134 +237,167 @@ const SingleProject = () => {
   };
   const closeAddLot = () => setAddLotOpen(false);
 
-  // Création (POST /feicom/api/lots/)
   const handleCreateLot = async (e) => {
     e.preventDefault();
     setAddLotError("");
-
-    // validations rapides
-    if (!newLotName?.trim()) {
-      setAddLotError("Le nom est requis.");
-      return;
-    }
-    if (!newLotAmount || isNaN(Number(newLotAmount))) {
-      setAddLotError("Le montant doit être un nombre.");
-      return;
-    }
+    if (!newLotName?.trim()) return setAddLotError("Le nom est requis.");
+    if (!newLotAmount || isNaN(Number(newLotAmount))) return setAddLotError("Le montant doit être un nombre.");
 
     setAddingLot(true);
     try {
+      console.log("[LOTS] POST /feicom/api/lots/", {
+        nom: newLotName.trim(), statut: "NOT STARTED", montant: Number(newLotAmount), pourcentage: "0", projet: Number(id)
+      });
       await axiosInstance.post("/feicom/api/lots/", {
         nom: newLotName.trim(),
-        statut: "NOT STARTED",          // par défaut
-        montant: Number(newLotAmount),  // tu peux envoyer number ou string selon ton API
-        pourcentage: "0",                // 0% par defaut
-        projet: Number(id),             // id du projet courant
+        statut: "NOT STARTED",
+        montant: Number(newLotAmount),
+        pourcentage: "0",
+        projet: Number(id),
       });
-
-      // succès: on referme, on recharge, on mets un toast success
-      toast.success("Lot ajouté avec succès.");
       setAddLotOpen(false);
       await reloadProject();
       setActive("lots");
-    } catch (err) {
-      toast.error("Impossible d’ajouter le lot. Vérifie les champs.");
-      setAddLotError(
-        err?.response?.data?.detail ||
-        "Impossible d’ajouter le lot. Vérifie les champs."
-      );
+    } catch (e) {
+      console.error("[LOTS] Create error:", e?.response?.data || e?.message);
+      setAddLotError(e?.response?.data?.detail || "Impossible d’ajouter le lot.");
     } finally {
       setAddingLot(false);
     }
   };
-  // // on charge les visites d'un projet
-  // useEffect(() =>{
-  //   const fetchVisites = async () => {
-  //     setLoading(true);
-  //     setError(null);
 
-  //     try {
-  //       const response = await axiosInstance.get(`/feicom/api/visites/${id}/`); // on recupere le visit id
-  //       setVisites(response.data);
-  //       } catch (err) {
-  //         setError(err.response?.data?.detail || "Une erreur est survenue lors du chargement du projet.")
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
+  // ---------- Contenu des onglets (branché sur les composants) ----------
+  const panes = {
+    resume: <ProjectResume project={project} />,
+    financement: <ProjectFinance project={project} money={money} />,
+    visites: (
+      <ProjectVisitsTable
+        visits={project?.visites || []}
+        loading={loadingProject}
+        onOpenVisit={openVisit}
+        onAddNew={openAddVisit}
+      />
+    ),
+    fichiers: (
+      <ProjectFiles
+        files={files}
+        filesLoading={filesLoading}
+        filesError={filesError}
+        uploadCategory={uploadCategory}
+        uploadFiles={uploadFiles}
+        uploading={uploading}
+        onPickFiles={handlePickFiles}
+        onUpload={handleUploadFiles}
+        onOpenFile={(f) => window.open(f.url || f.file, "_blank", "noopener")}
+        onAskDelete={askDeleteFile}
+        categories={{ list: FILE_CATEGORIES, onChange: setUploadCategory }}
+        openCat={openCat}
+        toggleCat={toggleCat}
+      />
+    ),
+    lots: (
+      <ProjectLots
+        lots={project?.lots || []}
+        projectId={project?.id}
+        onAdd={openAddLot}
+        onChanged={reloadProject}
+      />
+    ),
+  };
 
-  //   if (id){
-  //     fetchVisites();
-  //   }
-  // }, [id]);
-
-  // console.log(visites)
-
-  const [active, setActive] = useState("visites"); // onglet par défaut plus “vivant”
-
-  // Manege the modal
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
-  const [modalContent, setModalContent] = useState(null);
-  const [modal2Open, setModal2Open] = useState(false);
-
-  const handleAddModal = () => {
-    setModalTitle(
-      <div className="fw-semibold text-wrap">
-        {" "}
-        Fiche de Visite – PCCM / FEICOM{" "}
-      </div>
+  // ---------- Rendu ----------
+  if (loadingProject && !project) {
+    return (
+      <Fragment>
+        <Breadcrumbs mainTitle="FEICOM" parent="FEICOM" title="Projet" />
+        <Container fluid><p>Chargement du projet…</p></Container>
+      </Fragment>
     );
-    setModalContent(<div> Test</div>);
-    setModalOpen(true);
-  };
-
-  const handlevisitesModal = () => {
-    setModalTitle(
-      <div className="fw-semibold text-wrap"> Visite – PCCM / FEICOM </div>
-    );
-    setModalContent(<div> Test</div>);
-    setModal2Open(true);
-  };
-
-  //lets keep the informations of the visit column
-  const [visit, setVisit] = useState(null);
-
-  // on definit les colones de notre datatable
-  const columns = [
-    {
-      name: "Date",
-      selector: (row) => row.date,
-      cell: (row) => dayjs(row.date).format("dddd, DD MMMM YYYY"),
-      minWidth: "200px",
-    },
-    {
-      // entreprise_present is boolean it is either true or false
-      name: "Entreprise",
-      selector: (row) => row.enterprise_present,
-      cell: (row) => {
-        // conditional rendering base on bollean value
-        return row.enterprise_present ? (
-          <Badge color="success">Present</Badge>
-        ) : (
-          <Badge color="danger">Absent</Badge>
-        );
-      },
-      center: true,
-    },
-    {
-      // moe_present is boolean it is either true or false
-      name: "M_O",
-      selector: (row) => row.moe_present,
-      cell: (row) => {
-        // conditional rendering base on bollean value
-        return row.moe_present ? (
-          <Badge color="success">Present</Badge>
-        ) : (
-          <Badge color="danger">Absent</Badge>
-        );
-      },
-      center: true,
-
-    },
-    {
-      name: "Actions",
-      cell: (row) => (
-        <div className="d-flex gap-1">
-          <Btn
-            attrBtn={{
-              color: "info",
-              size: "sm",
-              className: "btn-sm py-1 px-2",
-              onClick: () => {
-                handlevisitesModal();
-                setVisit(row);
-              },
-            }}
-          >
-            <i className="fa fa-eye" />
-          </Btn>
-        </div>
-      ),
-      width: "150px",
-      ignoreRowClick: true,
-      button: true,
-    },
-  ];
-
-  // // on appelle le project id avec axios nstance
-  // const fetchProject = async () => {
-  //   try {
-  //     const res = await axiosInstance.get(`/feicom/api/projets/${id}/`); // on recupere le project id
-  //     return res.data;
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
-
-  // ----- Données fictives (statique) -----
-  const p = {
-    id: 1,
-    titre: "project.libelle",
-    region: "Centre",
-    departement: "Mfoundi",
-    commune: "Yaoundé I",
-    montant_ttc: 120000000,
-    avancement_physique: 60,
-    delais_consommes: 45,
-    avancement_financier: 50,
-    statut: "En cours",
-    updated_at: "2025-03-20 14:12",
-    convention: { numero: "CV-2025-001", os: "2025-01-15", duree_mois: 12 },
-    entreprise: {
-      nom: "Entreprise XYZ",
-      telephone: "699 00 11 22",
-      bp: "BP 12345",
-    },
-    moe: { nom: "Bureau MOE Alpha", telephone: "677 33 44 55" },
-    observations: "Travaux en bonne progression. Approvisionnement régulier.",
-    recommandations:
-      "Accélérer la livraison des matériaux pour tenir le jalon T3.",
-    financements: [
-      {
-        type: "Acompte démarrage",
-        reference: "AV001",
-        date: "2025-01-20",
-        montant: 20000000,
-        statut: "Payé",
-      },
-      {
-        type: "Décompte 1",
-        reference: "DC001",
-        date: "2025-03-10",
-        montant: 30000000,
-        statut: "Payé",
-      },
-      {
-        type: "Décompte 2",
-        reference: "DC002",
-        date: "2025-04-30",
-        montant: 25000000,
-        statut: "En traitement",
-      },
-    ],
-    visites: [
-      {
-        date: "2025-02-01",
-        presence_entreprise: true,
-        presence_moe: true,
-        avancement: 30,
-        delais: 25,
-        note: "Implantations OK.",
-      },
-      {
-        date: "2025-03-05",
-        presence_entreprise: true,
-        presence_moe: false,
-        avancement: 60,
-        delais: 45,
-        note: "Élévation murs niveau 1.",
-      },
-    ],
-    fichiers: [
-      { nom: "Plan d’exécution.pdf", url: "#" },
-      { nom: "Rapport visite chantier.docx", url: "#" },
-      { nom: "Programme d’action.xlsx", url: "#" },
-    ],
-    documents: {
-      ano: true,
-      trc: true,
-      caution: false,
-      projet_execution: true,
-      programme_action: true,
-    },
-  };
-
-  const money = (n) =>
-    (n ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " FCFA";
-
-  if (!project) {
-    return <p>Chargement ...</p>;
   }
+  if (errorProject) {
+    return (
+      <Fragment>
+        <Breadcrumbs mainTitle="FEICOM" parent="FEICOM" title="Projet" />
+        <Container fluid>
+          <div className="alert alert-warning">{errorProject}</div>
+          <Button color="secondary" onClick={loadProject}>Réessayer</Button>
+        </Container>
+      </Fragment>
+    );
+  }
+  if (!project) return null;
 
   return (
     <Fragment>
-      <Breadcrumbs mainTitle="FEICOM" parent="FEICOM" title="Project id" />
-      <Container fluid={true}>
-        <Row>
-          <Col className="widget-grid">
-            {/* Bandeau titre + actions rapides */}
-            <Row className="g-3">
-              <Col lg="9" xl="9">
-                <Card className="shadow-sm">
-                  <CardBody className="py-4">
-                    <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
-                      <div>
-                        <h2 className="mb-1">{project.libelle}</h2>
-                        <div className="text-muted">
-                          {project.commune.departement.agence.nom} •{" "}
-                          {project.commune.departement.nom} •{" "}
-                          {project.commune.nom}
-                        </div>
-                      </div>
-                      <div className="d-flex align-items-center gap-2">
-                        <Badge color="primary" pill className="px-3 py-2">
-                          {project.status}
-                        </Badge>
-                        <Button
-                          color="secondary"
-                          size="sm"
-                          onClick={() => window.history.back()}
-                        >
-                          ← Retour
-                        </Button>
-                      </div>
-                    </div>
+      <Breadcrumbs mainTitle="FEICOM" parent="FEICOM" title={`Projet #${project.id}`} />
+      <Container fluid>
+        <Row className="g-3">
+          <Col lg="9" xl="9">
+            {/* Bandeau entête + mini KPIs */}
+            <ProjectHeader
+              project={project}
+              money={money}
+              rightActions={
+                <ProjectQuickEdit
+                  project={project}
+                  onUpdated={async () => {
+                    // soit on remplace le state par "data" retournée,
+                    // soit on refetch pour être sûr d’avoir le dernier état backend
+                    await loadProject();
+                  }}
+                />
+              }
+            />
 
-                    {/* KPIs en cards fines */}
-                    <Row className="g-3 mt-3">
-                      <Col md="6" lg="6">
-                        <Card
-                          className="border-0"
-                          style={{ background: "#f1f5f9" }}
-                        >
-                          <CardBody>
-                            <div className="fw-bold mb-1">Montant TTC</div>
-                            <div className="fs-4">
-                              {money(project.montant_ht)}
-                            </div>
-                          </CardBody>
-                        </Card>
-                      </Col>
-                      <Col md="6" lg="6">
-                        <Card
-                          className="border-0"
-                          style={{ background: "#f8fafc" }}
-                        >
-                          <CardBody>
-                            <div className="fw-bold mb-2">
-                              Avancement physique
-                            </div>
-                            <Progress
-                              style={{ height: 14 }}
-                              value={project.progress}
-                            >
-                              {project.progress}%
-                            </Progress>
-                          </CardBody>
-                        </Card>
-                      </Col>
-                      <Col md="6" lg="6">
-                        <Card
-                          className="border-0"
-                          style={{ background: "#fff7ed" }}
-                        >
-                          <CardBody>
-                            <div className="fw-bold mb-2">Délais consommés</div>
-                            <Progress
-                              color="warning"
-                              style={{ height: 14 }}
-                              value={project.payment_percent}
-                            >
-                              {project.payment_percent}%
-                            </Progress>
-                          </CardBody>
-                        </Card>
-                      </Col>
-                      <Col md="6" lg="6">
-                        <Card
-                          className="border-0"
-                          style={{ background: "#ecfeff" }}
-                        >
-                          <CardBody>
-                            <div className="fw-bold mb-2">
-                              Avancement financier
-                            </div>
-                            <Progress
-                              color="info"
-                              style={{ height: 14 }}
-                              value={p.avancement_financier}
-                            >
-                              {p.avancement_financier}%
-                            </Progress>
-                          </CardBody>
-                        </Card>
-                      </Col>
-                    </Row>
-                  </CardBody>
-                </Card>
+            {/* Onglets + contenus */}
+            <ProjectTabs active={active} setActive={setActive} panes={panes} />
+          </Col>
 
-                {/* Bloc Tabs dans une large card */}
-                <Card className="shadow-sm mt-3">
-                  <CardHeader className="bg-white">
-                    <Nav tabs pills>
-                      <NavItem>
-                        <NavLink
-                          className={active === "resume" ? "active" : ""}
-                          onClick={() => setActive("resume")}
-                        >
-                          Résumé
-                        </NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={active === "financement" ? "active" : ""}
-                          onClick={() => setActive("financement")}
-                        >
-                          Financement
-                        </NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={active === "visites" ? "active" : ""}
-                          onClick={() => setActive("visites")}
-                        >
-                          Visites
-                        </NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={active === "fichiers" ? "active" : ""}
-                          onClick={() => setActive("fichiers")}
-                        >
-                          Pièces jointes
-                        </NavLink>
-                      </NavItem>
-                      {/* onn ajoute les lots */}
-                      <NavItem>
-                        <NavLink
-                          className={active === "lots" ? "active" : ""}
-                          onClick={() => setActive("lots")}
-                        >
-                          Lots
-                        </NavLink>
-                      </NavItem>
-                    </Nav>
-                  </CardHeader>
-                  <CardBody>
-                    <TabContent activeTab={active}>
-                      {/* ----- RESUME ----- */}
-                      <TabPane tabId="resume">
-                        <Row className="g-3">
-                          <Col md="6">
-                            <Card
-                              className="border-0"
-                              style={{ background: "#f8fafc" }}
-                            >
-                              <CardBody>
-                                <div className="text-uppercase small text-muted mb-2">
-                                  Convention
-                                </div>
-                                <div className="fw-semibold">
-                                  N° {p.convention.numero}
-                                </div>
-                                <div className="small">
-                                  OS de démarrage : {p.convention.os}
-                                </div>
-                                <div className="small">
-                                  Durée : {p.convention.duree_mois} mois
-                                </div>
-                              </CardBody>
-                            </Card>
-                          </Col>
-                          <Col md="6">
-                            <Card
-                              className="border-0"
-                              style={{ background: "#f8fafc" }}
-                            >
-                              <CardBody>
-                                <div className="text-uppercase small text-muted mb-2">
-                                  Entreprise
-                                </div>
-                                <div className="fw-semibold">
-                                  {p.entreprise.nom}
-                                </div>
-                                <div className="small">
-                                  {p.entreprise.telephone}
-                                </div>
-                                <div className="small">{p.entreprise.bp}</div>
-                              </CardBody>
-                            </Card>
-                          </Col>
-                          <Col md="6">
-                            <Card
-                              className="border-0"
-                              style={{ background: "#f8fafc" }}
-                            >
-                              <CardBody>
-                                <div className="text-uppercase small text-muted mb-2">
-                                  Maîtrise d’œuvre
-                                </div>
-                                <div className="fw-semibold">{p.moe.nom}</div>
-                                <div className="small">{p.moe.telephone}</div>
-                              </CardBody>
-                            </Card>
-                          </Col>
-                          <Col md="6">
-                            <UncontrolledAccordion stayOpen>
-                              <AccordionItem>
-                                <AccordionHeader targetId="docs">
-                                  Documents disponibles
-                                </AccordionHeader>
-                                <AccordionBody accordionId="docs">
-                                  <ListGroup flush>
-                                    <ListGroupItem className="d-flex justify-content-between align-items-center">
-                                      ANO{" "}
-                                      <Badge
-                                        color={
-                                          p.documents.ano
-                                            ? "success"
-                                            : "secondary"
-                                        }
-                                      >
-                                        {p.documents.ano ? "Oui" : "Non"}
-                                      </Badge>
-                                    </ListGroupItem>
-                                    <ListGroupItem className="d-flex justify-content-between align-items-center">
-                                      TRC{" "}
-                                      <Badge
-                                        color={
-                                          p.documents.trc
-                                            ? "success"
-                                            : "secondary"
-                                        }
-                                      >
-                                        {p.documents.trc ? "Oui" : "Non"}
-                                      </Badge>
-                                    </ListGroupItem>
-                                    <ListGroupItem className="d-flex justify-content-between align-items-center">
-                                      Caution{" "}
-                                      <Badge
-                                        color={
-                                          p.documents.caution
-                                            ? "success"
-                                            : "secondary"
-                                        }
-                                      >
-                                        {p.documents.caution ? "Oui" : "Non"}
-                                      </Badge>
-                                    </ListGroupItem>
-                                    <ListGroupItem className="d-flex justify-content-between align-items-center">
-                                      Projet d’exécution{" "}
-                                      <Badge
-                                        color={
-                                          p.documents.projet_execution
-                                            ? "success"
-                                            : "secondary"
-                                        }
-                                      >
-                                        {p.documents.projet_execution
-                                          ? "Oui"
-                                          : "Non"}
-                                      </Badge>
-                                    </ListGroupItem>
-                                    <ListGroupItem className="d-flex justify-content-between align-items-center">
-                                      Programme d’action{" "}
-                                      <Badge
-                                        color={
-                                          p.documents.programme_action
-                                            ? "success"
-                                            : "secondary"
-                                        }
-                                      >
-                                        {p.documents.programme_action
-                                          ? "Oui"
-                                          : "Non"}
-                                      </Badge>
-                                    </ListGroupItem>
-                                  </ListGroup>
-                                </AccordionBody>
-                              </AccordionItem>
-                            </UncontrolledAccordion>
-                          </Col>
-
-                          <Col md="12">
-                            <Card
-                              className="border-0"
-                              style={{ background: "#fff7ed" }}
-                            >
-                              <CardBody>
-                                <div className="text-uppercase small text-muted mb-2">
-                                  Observations
-                                </div>
-                                <div>{p.observations}</div>
-                              </CardBody>
-                            </Card>
-                          </Col>
-                          <Col md="12">
-                            <Card
-                              className="border-0"
-                              style={{ background: "#ecfeff" }}
-                            >
-                              <CardBody>
-                                <div className="text-uppercase small text-muted mb-2">
-                                  Recommandations
-                                </div>
-                                <div>{p.recommandations}</div>
-                              </CardBody>
-                            </Card>
-                          </Col>
-                        </Row>
-                      </TabPane>
-
-                      {/* ----- FINANCEMENT ----- */}
-                      <TabPane tabId="financement">
-                        <Row className="g-3">
-                          <Col md="12">
-                            <Card
-                              className="border-0"
-                              style={{ background: "#f8fafc" }}
-                            >
-                              <CardBody className="d-flex flex-wrap gap-4">
-                                <div>
-                                  <div className="text-muted small">
-                                    Montant TTC
-                                  </div>
-                                  <div className="fs-4 fw-bold">
-                                    {money(p.montant_ttc)}
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="text-muted small">
-                                    Total payé
-                                  </div>
-                                  <div className="fs-4 fw-bold">
-                                    {money(50000000)}
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="text-muted small">
-                                    Reste à payer
-                                  </div>
-                                  <div className="fs-4 fw-bold">
-                                    {money(p.montant_ttc - 50000000)}
-                                  </div>
-                                </div>
-                              </CardBody>
-                            </Card>
-                          </Col>
-                          <Col md="12">
-                            <Card>
-                              <CardBody>
-                                <div className="fw-bold mb-2">
-                                  Lignes financières
-                                </div>
-                                <Table
-                                  responsive
-                                  hover
-                                  className="align-middle"
-                                >
-                                  <thead>
-                                    <tr>
-                                      <th>Type</th>
-                                      <th>Réf.</th>
-                                      <th>Date</th>
-                                      <th>Montant</th>
-                                      <th>Statut</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {p.financements.map((f, i) => (
-                                      <tr key={i}>
-                                        <td>{f.type}</td>
-                                        <td>{f.reference}</td>
-                                        <td>{f.date}</td>
-                                        <td>{money(f.montant)}</td>
-                                        <td>
-                                          <Badge
-                                            color={
-                                              String(f.statut)
-                                                .toLowerCase()
-                                                .includes("pay")
-                                                ? "success"
-                                                : "warning"
-                                            }
-                                          >
-                                            {f.statut}
-                                          </Badge>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </Table>
-                              </CardBody>
-                            </Card>
-                          </Col>
-                        </Row>
-                      </TabPane>
-
-                      {/* ----- FICHIERS ----- */}
-                      <TabPane tabId="fichiers">
-                        <Row className="g-3">
-                          <Col md="12">
-                            <Card>
-                              <CardBody>
-                                <div className="fw-bold mb-3">Pièces jointes</div>
-
-                                {/* Formulaire d'upload */}
-                                <form onSubmit={handleUploadFiles} className="d-flex flex-wrap gap-2 align-items-end mb-3">
-                                  <FormGroup className="me-2 mb-2">
-                                    <Label className="form-label">Catégorie</Label>
-                                    <Input
-                                      type="select"
-                                      value={uploadCategory}
-                                      onChange={(e) => setUploadCategory(e.target.value)}
-                                    >
-                                      {FILE_CATEGORIES.map((c) => (
-                                        <option key={c} value={c}>{c}</option>
-                                      ))}
-                                    </Input>
-                                  </FormGroup>
-
-                                  <FormGroup className="me-2 mb-2">
-                                    <Label className="form-label">Fichiers</Label>
-                                    <Input
-                                      type="file"
-                                      multiple
-                                      onChange={handlePickFiles}
-                                    />
-                                  </FormGroup>
-
-                                  <div className="mb-2">
-                                    <Button
-                                      color="primary"
-                                      type="submit"
-                                      disabled={uploading}
-                                    >
-                                      {uploading ? "Envoi..." : "Ajouter"}
-                                    </Button>
-                                  </div>
-                                </form>
-
-                                {/* Infos upload sélection */}
-                                {uploadFiles.length > 0 && (
-                                  <div className="small text-muted mb-3">
-                                    {uploadFiles.length} fichier(s) sélectionné(s)
-                                  </div>
-                                )}
-
-                                {/* Erreur chargement */}
-                                {filesError && (
-                                  <div className="alert alert-warning py-2">{filesError}</div>
-                                )}
-
-                                {/* Explorateur par catégorie (accordion maison) */}
-                                {filesLoading ? (
-                                  <div className="text-muted small">Chargement des fichiers…</div>
-                                ) : (
-                                  (() => {
-                                    const byCat = groupByCategory(files);
-                                    const cats = Object.keys(byCat).sort();
-
-                                    if (!cats.length) {
-                                      return <div className="text-muted small">Aucun fichier pour ce projet.</div>;
-                                    }
-
-                                    return (
-                                      <div className="d-flex flex-column gap-2">
-                                        {cats.map((cat) => {
-                                          const isOpen = openCat === cat;
-
-                                          // Styles "maison" (dans le style des Lots)
-                                          const wrapStyle = {
-                                            position: "relative",
-                                            overflow: "hidden",
-                                            border: "1px solid #e5e7eb",
-                                            borderRadius: 12,
-                                            background: "#fff",
-                                          };
-                                          const headerStyle = {
-                                            position: "relative",
-                                            zIndex: 1,
-                                          };
-
-                                          return (
-                                            <div key={cat} style={wrapStyle}>
-                                              {/* Header cliquable */}
-                                              <div
-                                                className="w-100 px-4 py-3 d-flex align-items-center justify-content-between"
-                                                style={headerStyle}
-                                              >
-                                                <div className="d-flex align-items-center gap-2">
-                                                  <button
-                                                    onClick={() => toggleCat(cat)}
-                                                    aria-expanded={isOpen}
-                                                    className="btn btn-link p-0 text-decoration-none fw-semibold text-dark"
-                                                    type="button"
-                                                    title={isOpen ? "Réduire" : "Déployer"}
-                                                  >
-                                                    {cat}
-                                                  </button>
-                                                  <Badge color="light" className="text-muted">
-                                                    {byCat[cat].length}
-                                                  </Badge>
-                                                </div>
-
-                                                <button
-                                                  className="btn btn-light btn-sm"
-                                                  onClick={() => toggleCat(cat)}
-                                                  aria-label={isOpen ? "Réduire" : "Déployer"}
-                                                  type="button"
-                                                >
-                                                  {isOpen ? "▲" : "▼"}
-                                                </button>
-                                              </div>
-
-                                              {/* Corps */}
-                                              {isOpen && (
-                                                <div
-                                                  className="px-3 pb-3 pt-2"
-                                                  style={{
-                                                    position: "relative",
-                                                    zIndex: 1,
-                                                    background: "white",
-                                                    borderTop: "1px solid #e5e7eb",
-                                                  }}
-                                                >
-                                                  <ListGroup flush>
-                                                    {byCat[cat].map((f) => (
-                                                      <ListGroupItem
-                                                        key={f.id}
-                                                        className="d-flex justify-content-between align-items-center"
-                                                      >
-                                                        <div className="text-truncate me-2" style={{ maxWidth: 420 }}>
-                                                          <div className="fw-semibold text-truncate">
-                                                            {filenameFrom(f)}
-                                                          </div>
-                                                          {f.created_at && (
-                                                            <div className="small text-muted">
-                                                              Ajouté le {dayjs(f.created_at).format("DD/MM/YYYY HH:mm")}
-                                                            </div>
-                                                          )}
-                                                        </div>
-
-                                                        <div className="d-flex align-items-center gap-2">
-                                                          {/* Ouvrir dans un nouvel onglet */}
-                                                          <Button
-                                                            color="primary"
-                                                            size="sm"
-                                                            outline
-                                                            onClick={() =>
-                                                              window.open(f.url || f.file, "_blank", "noopener")
-                                                            }
-                                                          >
-                                                            <i className="fa fa-eye" />
-                                                          </Button>
-
-                                                          {/* Supprimer (ouvre le modal de confirmation) */}
-                                                          <Button
-                                                            color="danger"
-                                                            outline
-                                                            size="sm"
-                                                            onClick={() => askDeleteFile(f)}
-                                                            title="Supprimer le fichier"
-                                                          >
-                                                            <i className="fa fa-trash" />
-                                                          </Button>
-                                                        </div>
-                                                      </ListGroupItem>
-                                                    ))}
-                                                  </ListGroup>
-                                                </div>
-                                              )}
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    );
-                                  })()
-                                )}
-
-                              </CardBody>
-                            </Card>
-                          </Col>
-                        </Row>
-
-                        {/* Modal de confirmation de suppression */}
-                        <Modal isOpen={confirmDeleteOpen} toggle={closeConfirmDelete} centered>
-                          <ModalHeader toggle={closeConfirmDelete}>Confirmer la suppression</ModalHeader>
-                          <ModalBody>
-                            {fileToDelete ? (
-                              <>
-                                <p className="mb-2">
-                                  Tu es sur le point de supprimer le fichier&nbsp;
-                                  <strong>{filenameFrom(fileToDelete)}</strong>.
-                                </p>
-                                <p className="mb-0 text-danger small">
-                                  Cette action est irréversible.
-                                </p>
-                                {deleteError ? (
-                                  <div className="alert alert-danger py-2 mt-3">{deleteError}</div>
-                                ) : null}
-                              </>
-                            ) : (
-                              "Aucun fichier sélectionné."
-                            )}
-                          </ModalBody>
-                          <ModalFooter>
-                            <Button color="secondary" onClick={closeConfirmDelete} disabled={deletingFile}>
-                              Annuler
-                            </Button>
-                            <Button color="danger" onClick={confirmDeleteFile} disabled={deletingFile}>
-                              {deletingFile ? "Suppression..." : "Supprimer"}
-                            </Button>
-                          </ModalFooter>
-                        </Modal>
-                      </TabPane>
-
-                      {/* ----- VISITES ----- */}
-                      <TabPane tabId="visites">
-                        <Row className="g-3">
-                          <Col className="text-end">
-                            <Btn
-                              attrBtn={{
-                                color: "primary",
-                                onClick: handleAddModal,
-                              }}
-                            >
-                              Add Project Visit
-                            </Btn>
-                          </Col>
-                          <Col lg="12">
-                            <Card>
-                              <CardBody>
-                                <div className="fw-bold mb-2">
-                                  Visit history
-                                </div>
-
-                                {/* on affiche les visites avec react data table */}
-                                <DataTable
-                                  columns={columns}
-                                  data={project.visites}
-                                  striped
-                                  center
-                                  pagination
-                                  progressPending={loading}
-                                  noDataComponent="NAN"
-                                />
-                              </CardBody>
-                            </Card>
-                          </Col>
-                        </Row>
-                      </TabPane>
-
-                      {/* ----- LOTS ----- */}
-                      <TabPane tabId="lots">
-                        <Row className="g-3">
-                          <Col md="12">
-                            <Card>
-                              <CardBody>
-                                {/* Bouton d'ajout de lot */}
-                                <div className="d-flex justify-content-end mb-3">
-                                  <Button color="primary" size="sm" onClick={openAddLot}>
-                                    + Ajouter un lot
-                                  </Button>
-                                </div>
-
-                                {/* On passe l'id projet et un callback pour recharger après PUT/DELETE */}
-                                <Lots
-                                  lots={project.lots || []}
-                                  projectId={project.id}
-                                  onChanged={reloadProject}
-                                />
-                              </CardBody>
-                            </Card>
-                          </Col>
-                        </Row>
-                      </TabPane>
-                    </TabContent>
-                  </CardBody>
-                </Card>
-              </Col>
-
-              {/* Colonne droite “Infos + Stats rapides” */}
-              <Col lg="3" xl="3">
-                <Row className="g-3">
-                  <Col md="12">
-                    <Card className="shadow-sm h-100">
-                      <CardHeader className="bg-white">Informations</CardHeader>
-                      <CardBody>
-                        <div className="d-flex justify-content-between">
-                          <span>Région</span>
-                          <span className="fw-semibold">{p.region}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span>Département</span>
-                          <span className="fw-semibold">{p.departement}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span>Commune</span>
-                          <span className="fw-semibold">{p.commune}</span>
-                        </div>
-                        <hr />
-                        <div className="d-flex justify-content-between">
-                          <span>Montant TTC</span>
-                          <span className="fw-semibold">
-                            {money(p.montant_ttc)}
-                          </span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span>Décaissements</span>
-                          <span className="fw-semibold">{money(50000000)}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span>Reste à payer</span>
-                          <span className="fw-semibold">
-                            {money(p.montant_ttc - 50000000)}
-                          </span>
-                        </div>
-                        <hr />
-                        <div className="small text-muted">
-                          Dernière mise à jour
-                        </div>
-                        <div>{p.updated_at}</div>
-                      </CardBody>
-                    </Card>
-                  </Col>
-
-                  {/* <Col md="12">
-                    <Card className="shadow-sm">
-                      <CardHeader className="bg-white">
-                        Jalons à venir
-                      </CardHeader>
-                      <CardBody>
-                        <ListGroup flush>
-                          <ListGroupItem className="d-flex justify-content-between align-items-center">
-                            Livraison lot 1 <Badge color="secondary">T3</Badge>
-                          </ListGroupItem>
-                          <ListGroupItem className="d-flex justify-content-between align-items-center">
-                            Réception provisoire{" "}
-                            <Badge color="secondary">T4</Badge>
-                          </ListGroupItem>
-                          <ListGroupItem className="d-flex justify-content-between align-items-center">
-                            Réception définitive{" "}
-                            <Badge color="secondary">+12 mois</Badge>
-                          </ListGroupItem>
-                        </ListGroup>
-                      </CardBody>
-                    </Card>
-                  </Col> */}
-
-                  {/* <Col md="12">
-                    <Card className="shadow-sm">
-                      <CardHeader className="bg-white">
-                        Risques & alertes
-                      </CardHeader>
-                      <CardBody>
-                        <ListGroup flush>
-                          <ListGroupItem className="d-flex justify-content-between align-items-center">
-                            Retard matériaux{" "}
-                            <Badge color="warning">Modéré</Badge>
-                          </ListGroupItem>
-                          <ListGroupItem className="d-flex justify-content-between align-items-center">
-                            Intempéries <Badge color="success">Faible</Badge>
-                          </ListGroupItem>
-                          <ListGroupItem className="d-flex justify-content-between align-items-center">
-                            Variation prix <Badge color="danger">Élevé</Badge>
-                          </ListGroupItem>
-                        </ListGroup>
-                      </CardBody>
-                    </Card>
-                  </Col> */}
-                  {/* Galerie dimages */}
-                  <Col md="12">
-                    <Card className="shadow-sm">
-                      <CardHeader className="bg-white d-flex justify-content-between align-items-center">
-                        <span>Galerie du projet</span>
-                        <Badge color="light" className="text-muted">{gallery.count || gallery.images.length} image(s)</Badge>
-                      </CardHeader>
-                      <CardBody>
-                        {gallery.images.length === 0 ? (
-                          <div className="text-muted small">Aucune image disponible pour ce projet.</div>
-                        ) : (
-                          <div
-                            className="d-grid"
-                            style={{
-                              gridTemplateColumns: "repeat(3, 1fr)",
-                              gap: "8px",
-                            }}
-                          >
-                            {gallery.images.map((src, i) => (
-                              <button
-                                key={src}
-                                onClick={() => openImageAt(i)}
-                                className="p-0 border-0 bg-transparent"
-                                style={{
-                                  width: "100%",
-                                  aspectRatio: "1 / 1",
-                                  borderRadius: 12,
-                                  overflow: "hidden",
-                                  boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                                }}
-                                title={`Ouvrir l’image ${i + 1}`}
-                              >
-                                <img
-                                  src={src}
-                                  alt={`Projet image ${i + 1}`}
-                                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                                  loading="lazy"
-                                />
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </CardBody>
-                    </Card>
-
-                    <Modal isOpen={imgOpen} toggle={closeImage} size="xl" centered>
-                      <ModalHeader toggle={closeImage}>
-                        Image {imgIndex + 1} / {gallery.images.length}
-                      </ModalHeader>
-                      <ModalBody className="d-flex justify-content-center">
-                        {gallery.images[imgIndex] && (
-                          <img
-                            src={gallery.images[imgIndex]}
-                            alt={`Projet image ${imgIndex + 1}`}
-                            className="img-fluid"
-                            style={{ maxHeight: "80vh", userSelect: "none" }}
-                          />
-                        )}
-                      </ModalBody>
-                      <ModalFooter className="d-flex justify-content-between">
-                        <Button color="secondary" onClick={prevImage} disabled={imgIndex === 0}>
-                          ← Précédent
-                        </Button>
-                        <div className="text-muted small">
-                          Utilise les flèches ← → du clavier
-                        </div>
-                        <Button color="primary" onClick={nextImage} disabled={imgIndex + 1 >= gallery.images.length}>
-                          Suivant →
-                        </Button>
-                      </ModalFooter>
-                    </Modal>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
+          <Col lg="3" xl="3">
+            {/* Carte Galerie (colonne droite) */}
+            <ProjectGallery gallery={gallery} onOpenAt={openImageAt} />
           </Col>
         </Row>
       </Container>
 
+      {/* Lightbox image */}
+      <ImageLightbox
+        isOpen={imgOpen}
+        onClose={closeImage}
+        src={gallery?.images?.[imgIndex]}
+        index={imgIndex}
+        count={gallery?.images?.length || 0}
+        onPrev={prevImage}
+        onNext={nextImage}
+      />
+
+      {/* Modal ajout de visite */}
       <CommonModal
-        isOpen={modalOpen}
-        title={modalTitle}
-        toggler={() => setModalOpen(false)}
+        isOpen={modalAddVisitOpen}
+        title={<div className="fw-semibold">Fiche de Visite – PCCM / FEICOM</div>}
+        toggler={() => setModalAddVisitOpen(false)}
         size="lg"
       >
-        {/* on passe le id en props, on submit on reloadproject */}
-        <ProjectVisitForm onSubmit={reloadProject()} projetId={id} />
+        <ProjectVisitForm
+          projetId={id}
+          onSubmit={async () => {
+            await reloadProject();
+            setModalAddVisitOpen(false);
+          }}
+        />
       </CommonModal>
 
+      {/* Modal consultation Visite → Rapport */}
       <CommonModal
-        isOpen={modal2Open}
-        title={modalTitle}
-        toggler={() => setModal2Open(false)}
+        isOpen={modalVisitOpen}
+        title={<div className="fw-semibold">Visite – PCCM / FEICOM</div>}
+        toggler={() => setModalVisitOpen(false)}
         size="lg"
       >
-        {/* on passe project et aussi la visite en props */}
         <Rapport project={project} visit={visit} />
       </CommonModal>
 
+      {/* Modal ajout Lot */}
       <CommonModal
         isOpen={addLotOpen}
         title={<div className="fw-semibold">Ajouter un lot</div>}
@@ -1454,7 +414,6 @@ const SingleProject = () => {
               onChange={(e) => setNewLotName(e.target.value)}
             />
           </div>
-
           <div className="mb-3">
             <Label className="form-label">Montant</Label>
             <Input
@@ -1465,11 +424,7 @@ const SingleProject = () => {
               onChange={(e) => setNewLotAmount(e.target.value)}
             />
           </div>
-
-          {addLotError ? (
-            <div className="alert alert-danger py-2">{addLotError}</div>
-          ) : null}
-
+          {addLotError && <div className="alert alert-danger py-2">{addLotError}</div>}
           <div className="d-flex justify-content-end gap-2">
             <Button type="button" color="secondary" onClick={closeAddLot} disabled={addingLot}>
               Annuler
@@ -1481,6 +436,28 @@ const SingleProject = () => {
         </form>
       </CommonModal>
 
+      {/* Modal confirmation suppression fichier */}
+      <Modal isOpen={confirmDeleteOpen} toggle={closeConfirmDelete} centered>
+        <ModalHeader toggle={closeConfirmDelete}>Confirmer la suppression</ModalHeader>
+        <ModalBody>
+          {fileToDelete ? (
+            <>
+              <p className="mb-2">
+                Tu es sur le point de supprimer le fichier&nbsp;
+                <strong>{(fileToDelete.file || fileToDelete.url || "").split("/").pop()}</strong>.
+              </p>
+              <p className="mb-0 text-danger small">Cette action est irréversible.</p>
+              {deleteError && <div className="alert alert-danger py-2 mt-3">{deleteError}</div>}
+            </>
+          ) : ("Aucun fichier sélectionné.")}
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={closeConfirmDelete} disabled={deletingFile}>Annuler</Button>
+          <Button color="danger" onClick={confirmDeleteFile} disabled={deletingFile}>
+            {deletingFile ? "Suppression..." : "Supprimer"}
+          </Button>
+        </ModalFooter>
+      </Modal>
     </Fragment>
   );
 };
