@@ -3,6 +3,8 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Form, Row, Col, Lab
 import axiosInstance from "../../../../../api/axios";
 import { toast } from "react-toastify";
 
+import SearchableDropdown from "./searchableDropdown";
+
 /**
  * ProjectQuickEdit
  * Bouton + Modal d’édition partielle d’un projet (PATCH /feicom/api/projets/{id}/partial/)
@@ -77,6 +79,14 @@ const ProjectQuickEdit = ({ project, onUpdated }) => {
     return () => { mounted = false; };
   }, []);
 
+  // mapping communes -> items pour le dropdown
+  const communeItems = useMemo(() => {
+    return (communes || []).map((c) => ({
+      value: c.id,
+      label: `${c.nom} — ${c?.departement?.nom ?? ""} (${c?.departement?.agence?.code ?? ""})`.trim(),
+    }));
+  }, [communes]);
+
   const toggle = () => setOpen((o) => !o);
 
   const resetAndClose = () => {
@@ -122,7 +132,7 @@ const ProjectQuickEdit = ({ project, onUpdated }) => {
   return (
     <>
       {/* Bouton à mettre dans l'entête */}
-      <Button color="secondary" size="sm" onClick={toggle}>
+      <Button color="primary" size="sm" onClick={toggle}>
         Modifier
       </Button>
 
@@ -144,20 +154,15 @@ const ProjectQuickEdit = ({ project, onUpdated }) => {
               </Col>
 
               <Col md="6">
-                <Label className="form-label">Commune</Label>
-                <Input
-                  type="select"
-                  value={commune}
-                  disabled={loadingCommunes}
-                  onChange={(e) => setCommune(e.target.value)}
-                >
-                  <option value="">— (inchangé)</option>
-                  {communes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nom} — {c?.departement?.nom} ({c?.departement?.agence?.code})
-                    </option>
-                  ))}
-                </Input>
+                  <Label className="form-label">Commune</Label>
+                  <SearchableDropdown
+                    items={communeItems}
+                    value={commune}
+                    onChange={(val) => setCommune(String(val))}
+                    disabled={loadingCommunes}
+                    noSelectionLabel="— (inchangé)"
+                    placeholder="Rechercher une commune…"
+                  />
               </Col>
 
               <Col md="6">
